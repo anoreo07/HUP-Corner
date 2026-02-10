@@ -14,7 +14,7 @@ export const menuItems = [
   {
     name: 'Trang chủ',
     href: '/trang-chu',
-    icon: <PiHouseDuotone />,
+    icon: <PiHouseDuotone className="text-blue-500" />,
   },
   {
     name: 'NGÀNH HỌC',
@@ -22,27 +22,27 @@ export const menuItems = [
   {
     name: 'Tất cả',
     href: '/tat-ca',
-    icon: <PiSquaresFourDuotone />,
+    icon: <PiSquaresFourDuotone className="text-indigo-500" />,
   },
   {
     name: 'Hoá dược',
     href: '/hoa-duoc',
-    icon: <PiFlaskDuotone />,
+    icon: <PiFlaskDuotone className="text-purple-500" />,
   },
   {
     name: 'Công nghệ sinh học',
     href: '/cong-nghe-sinh-hoc',
-    icon: <PiDnaDuotone />,
+    icon: <PiDnaDuotone className="text-green-500" />,
   },
   {
     name: 'Hoá học',
     href: '/hoa-hoc',
-    icon: <PiAtomDuotone />,
+    icon: <PiAtomDuotone className="text-orange-500" />,
   },
   {
     name: 'Dược học',
     href: '/duoc-hoc',
-    icon: <PiFirstAidKitDuotone />,
+    icon: <PiFirstAidKitDuotone className="text-red-500" />,
   },
   {
     name: 'ĐÁNH GIÁ GIẢNG VIÊN',
@@ -50,11 +50,11 @@ export const menuItems = [
   {
     name: 'Xem Đánh Giá',
     href: '/xem-danh-gia',
-    icon: <PiEyeDuotone />,
+    icon: <PiEyeDuotone className="text-cyan-500" />,
   },
   {
     name: 'Viết Đánh Giá',
     href: '/viet-danh-gia',
-    icon: <PiNotePencilDuotone />,
+    icon: <PiNotePencilDuotone className="text-amber-500" />,
   },
 ];

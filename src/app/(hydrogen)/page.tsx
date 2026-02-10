@@ -1,10 +1,10 @@
-import FileDashboard from '@/app/shared/file/dashboard';
+import { redirect } from 'next/navigation';
 import { metaObject } from '@/config/site.config';
 
 export const metadata = {
   ...metaObject(),
 };
 
-export default function FileDashboardPage() {
-  return <FileDashboard />;
+export default function HomePage() {
+  redirect('/trang-chu');
 }
