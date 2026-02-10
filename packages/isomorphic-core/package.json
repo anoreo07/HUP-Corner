@@ -121,9 +121,7 @@
     "prettier": "3.3.3",
     "prettier-plugin-tailwindcss": "^0.6.6",
     "rimraf": "^6.0.1",
-    "tailwind-config": "workspace:*",
     "tailwindcss": "^3.4.10",
-    "typescript": "^5.3.3",
-    "typescript-config": "workspace:*"
+    "typescript": "^5.3.3"
   }
 }

@@ -336,15 +336,9 @@ importers:
       rimraf:
         specifier: ^6.0.1
         version: 6.1.2
-      tailwind-config:
-        specifier: file:./packages/config-tailwind
-        version: file:packages/config-tailwind
       tailwindcss:
         specifier: ^3.4.10
         version: 3.4.19
-      typescript-config:
-        specifier: file:./packages/config-typescript
-        version: file:packages/config-typescript
 
 packages:
 
@@ -4057,9 +4051,6 @@ packages:
   tabbable@6.4.0:
     resolution: {integrity: sha512-05PUHKSNE8ou2dwIxTngl4EzcnsCDZGJ/iCLtDflR/SHB/ny14rXc+qU5P4mG9JkusiV7EivzY9Mhm55AzAvCg==}
 
-  tailwind-config@file:packages/config-tailwind:
-    resolution: {directory: packages/config-tailwind, type: directory}
-
   tailwind-merge@2.3.0:
     resolution: {integrity: sha512-vkYrLpIP+lgR0tQCG6AP7zZXCTLc1Lnv/CCRT3BqJ9CZ3ui2++GPaGb1x/ILsINIMSYqqvrpqjUFsMNLlW99EA==}
 
@@ -4143,9 +4134,6 @@ packages:
   typed-array-length@1.0.7:
     resolution: {integrity: sha512-3KS2b+kL7fsuk/eJZ7EQdnEmQoaho/r6KUef7hxvltNA5DR8NAUM+8wJMbJyZ4G9/7i3v5zPBIMN5aybAh2/Jg==}
     engines: {node: '>= 0.4'}
-
-  typescript-config@file:packages/config-typescript:
-    resolution: {directory: packages/config-typescript, type: directory}
 
   typescript@5.5.4:
     resolution: {integrity: sha512-Mtq29sKDAEYP7aljRgtPOpTvOfbwRWlS6dPRzwjdE+C0R4brX/GUyhHSecbHMFLNBLcJIPt9nl9yG5TZ1weH+Q==}
@@ -8306,8 +8294,6 @@ snapshots:
 
   tabbable@6.4.0: {}
 
-  tailwind-config@file:packages/config-tailwind: {}
-
   tailwind-merge@2.3.0:
     dependencies:
       '@babel/runtime': 7.28.6
@@ -8424,8 +8410,6 @@ snapshots:
       is-typed-array: 1.1.15
       possible-typed-array-names: 1.1.0
       reflect.getprototypeof: 1.0.10
-
-  typescript-config@file:packages/config-typescript: {}
 
   typescript@5.5.4: {}
 

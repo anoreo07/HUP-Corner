@@ -124,9 +124,7 @@
     "prettier": "3.3.3",
     "prettier-plugin-tailwindcss": "^0.6.6",
     "rimraf": "^6.0.1",
-    "tailwind-config": "file:./packages/config-tailwind",
-    "tailwindcss": "^3.4.10",
-    "typescript-config": "file:./packages/config-typescript"
+    "tailwindcss": "^3.4.10"
   },
   "engines": {
     "node": ">=18.15.0"
