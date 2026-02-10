@@ -1,25 +1,14 @@
-import { pagesOptions } from '@/app/api/auth/[...nextauth]/pages-options';
-import withAuth from 'next-auth/middleware';
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 
-export default withAuth({
-  pages: {
-    ...pagesOptions,
-  },
-});
+export function middleware(request: NextRequest) {
+  // Redirect root to trang-chu
+  if (request.nextUrl.pathname === '/') {
+    return NextResponse.redirect(new URL('/trang-chu', request.url));
+  }
+  return NextResponse.next();
+}
 
 export const config = {
-  // restricted routes
-  matcher: [
-    '/',
-    '/executive',
-    '/financial',
-    '/analytics',
-    '/logistics/:path*',
-    '/ecommerce/:path*',
-    '/support/:path*',
-    '/file/:path*',
-    '/file-manager',
-    '/invoice/:path*',
-    '/forms/profile-settings/:path*',
-  ],
+  matcher: ['/'],
 };
