@@ -4,6 +4,8 @@ import GoogleProvider from 'next-auth/providers/google';
 import { env } from '@/env.mjs';
 import isEqual from 'lodash/isEqual';
 import { pagesOptions } from './pages-options';
+import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
+import bcrypt from 'bcryptjs';
 
 export const authOptions: NextAuthOptions = {
   // debug: true,
@@ -20,14 +22,39 @@ export const authOptions: NextAuthOptions = {
         ...session,
         user: {
           ...session.user,
-          id: token.idToken as string,
+          id: (token as any).idToken as string,
+          role: (token as any).role || 'user',
         },
       };
     },
     async jwt({ token, user }) {
       if (user) {
-        // return user as JWT
-        token.user = user;
+        // If the provider returned a marker that this is an admin-auth login,
+        // attach role=admin. Otherwise, try to resolve role from profiles by email.
+        try {
+          const supabaseAdmin = getSupabaseAdmin();
+          // If authorize() returned isAdmin flag, treat as admin
+          if ((user as any).__isAdmin) {
+            (token as any).role = 'admin';
+            (token as any).idToken = (user as any).id as string;
+          } else {
+            const email = (user as any).email;
+            if (email) {
+              const { data: profile } = await supabaseAdmin
+                .from('profiles')
+                .select('role')
+                .eq('email', email)
+                .maybeSingle();
+              (token as any).role = (profile as any)?.role || 'user';
+              (token as any).idToken = (user as any).id as string | undefined;
+            } else {
+              (token as any).role = 'user';
+            }
+          }
+        } catch (err) {
+          (token as any).role = 'user';
+        }
+        (token as any).user = user;
       }
       return token;
     },
@@ -44,27 +71,40 @@ export const authOptions: NextAuthOptions = {
   },
   providers: [
     CredentialsProvider({
-      id: 'credentials',
-      name: 'Credentials',
-      credentials: {},
+      id: 'admin-password',
+      name: 'AdminPassword',
+      credentials: { password: { label: 'Password', type: 'password' } },
       async authorize(credentials: any) {
-        // You need to provide your own logic here that takes the credentials
-        // submitted and returns either a object representing a user or value
-        // that is false/null if the credentials are invalid
-        const user = {
-          email: 'admin@admin.com',
-          password: 'admin',
-        };
+        const password = credentials?.password;
+        if (!password) return null;
 
-        if (
-          isEqual(user, {
-            email: credentials?.email,
-            password: credentials?.password,
-          })
-        ) {
-          return user as any;
+        try {
+          const supabaseAdmin = getSupabaseAdmin();
+          const { data: row, error } = await supabaseAdmin
+            .from('admin_auth')
+            .select('id, password_hash')
+            .limit(1)
+            .single();
+
+          if (error) {
+            console.error('[nextauth][admin-password] supabase error:', error);
+            return null;
+          }
+          if (!row) {
+            console.warn('[nextauth][admin-password] no admin_auth row found');
+            return null;
+          }
+
+          const match = await bcrypt.compare(password, (row as any).password_hash);
+          console.log(`[nextauth][admin-password] password match: ${match}`);
+          if (!match) return null;
+
+          // mark user object so jwt callback can set role=admin
+          return { id: (row as any).id, __isAdmin: true } as any;
+        } catch (err) {
+          console.error('[nextauth][admin-password] authorize exception:', err);
+          return null;
         }
-        return null;
       },
     }),
     GoogleProvider({

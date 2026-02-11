@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useSession, signOut } from 'next-auth/react';
 import { Button, Badge, Title, ActionIcon, Empty } from 'rizzui';
 import {
   PiCheckBold,
@@ -61,33 +62,130 @@ const getStatusBadge = (status: DocumentStatus) => {
 
 export default function AdminDashboardPage() {
   const router = useRouter();
-  const [isAdmin, setIsAdmin] = useState(false);
+  const { data: session, status } = useSession();
   const [documents, setDocuments] = useState<DocumentWithMajor[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'PENDING' | 'APPROVED' | 'REJECTED'>('PENDING');
 
+  const [counts, setCounts] = useState({ total: 0, pending: 0, approved: 0, rejected: 0 });
+
   const [approving, setApproving] = useState<string | null>(null);
 
+  // Reload documents whenever filter changes
   useEffect(() => {
-    // Check admin session
-    const adminStatus = localStorage.getItem('isAdmin');
-    if (adminStatus !== 'true') {
+    if (status === 'loading') return;
+    if (!session || (session.user as any)?.role !== 'admin') {
       router.push('/admin/login');
       return;
     }
-    setIsAdmin(true);
     loadDocuments();
-  }, [router]);
+  }, [filter, status, session]);
+
+  useEffect(() => {
+    if (status === 'loading') return;
+    if (!session || (session.user as any)?.role !== 'admin') {
+      router.push('/admin/login');
+      return;
+    }
+    // load both counts and list when admin session present
+    loadCounts();
+    loadDocuments();
+  }, [router, status, session]);
+
+  // Listen for cross-tab document updates (upload/approve) and reload.
+  // Use both BroadcastChannel and storage event; also add polling fallback.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const onMessage = (e: MessageEvent) => {
+      try {
+        const msg = (e as any).data ?? e;
+        if (msg?.type === 'uploaded' || msg?.type === 'updated') {
+          // reload both counts and list for current filter
+          loadCounts();
+          loadDocuments();
+        }
+      } catch (err) {
+        // ignore
+      }
+    };
+
+    let bc: BroadcastChannel | null = null;
+    try {
+      if (typeof BroadcastChannel !== 'undefined') {
+        bc = new BroadcastChannel('documents');
+        // support older and newer browsers
+        if (typeof bc.addEventListener === 'function') {
+          bc.addEventListener('message', onMessage as EventListener);
+        } else {
+          // fallback
+          (bc as any).onmessage = onMessage;
+        }
+      }
+    } catch (err) {
+      bc = null;
+    }
+
+    const onStorage = (ev: StorageEvent) => {
+      if (ev.key === 'documents-updated') {
+        loadCounts();
+        loadDocuments();
+      }
+    };
+    window.addEventListener('storage', onStorage);
+
+    // Polling fallback: every 8s while admin page is open
+    const interval = setInterval(() => {
+      loadCounts();
+      loadDocuments();
+    }, 8000);
+
+    return () => {
+      try {
+        if (bc) {
+          if (typeof bc.removeEventListener === 'function') {
+            bc.removeEventListener('message', onMessage as EventListener);
+          } else {
+            (bc as any).onmessage = null;
+          }
+          bc.close();
+        }
+      } catch (err) {}
+      window.removeEventListener('storage', onStorage);
+      clearInterval(interval);
+    };
+  }, []);
 
   const loadDocuments = async () => {
     try {
       setLoading(true);
-      const data = await getAllDocumentsForAdmin();
+      let data: DocumentWithMajor[] = [];
+      try {
+        const api = await import('@/lib/supabase');
+        data = await api.getAllDocumentsForAdmin();
+      } catch (err) {
+        console.error('Error calling documents API:', err);
+        data = [];
+      }
       setDocuments(data || []);
     } catch (err) {
       console.error('Error loading documents:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadCounts = async () => {
+    try {
+      const api = await import('@/lib/supabase');
+      const all = await api.getAllDocumentsForAdmin();
+      const total = (all || []).length;
+      const pending = (all || []).filter((d: any) => d.status === 'PENDING').length;
+      const approved = (all || []).filter((d: any) => d.status === 'APPROVED').length;
+      const rejected = (all || []).filter((d: any) => d.status === 'REJECTED').length;
+      setCounts({ total, pending, approved, rejected });
+    } catch (err) {
+      console.error('Error loading counts:', err);
     }
   };
 
@@ -104,6 +202,7 @@ export default function AdminDashboardPage() {
         throw new Error(result.error || 'Duyệt thất bại');
       }
       toast.success('Đã duyệt và lưu vào Telegram!');
+      await loadCounts();
       loadDocuments();
     } catch (err: any) {
       console.error('Error approving document:', err);
@@ -126,6 +225,7 @@ export default function AdminDashboardPage() {
         throw new Error(result.error || 'Từ chối thất bại');
       }
       toast.success('Đã từ chối và xoá file!');
+      await loadCounts();
       loadDocuments();
     } catch (err: any) {
       console.error('Error rejecting document:', err);
@@ -146,6 +246,7 @@ export default function AdminDashboardPage() {
         throw new Error(result.error || 'Xoá thất bại');
       }
       toast.success('Đã xoá tài liệu!');
+      await loadCounts();
       loadDocuments();
     } catch (err: any) {
       console.error('Error deleting document:', err);
@@ -180,9 +281,8 @@ export default function AdminDashboardPage() {
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('isAdmin');
-    localStorage.removeItem('adminLoginTime');
+  const handleLogout = async () => {
+    await signOut({ redirect: false });
     router.push('/admin/login');
   };
 
@@ -191,9 +291,8 @@ export default function AdminDashboardPage() {
     return doc.status === filter;
   });
 
-  if (!isAdmin) {
-    return null;
-  }
+  if (status === 'loading') return null;
+  if (!session || (session.user as any)?.role !== 'admin') return null;
 
   return (
     <div className="flex flex-col gap-6">
@@ -225,7 +324,7 @@ export default function AdminDashboardPage() {
           }`}
           onClick={() => setFilter('all')}
         >
-          <p className="text-2xl font-bold text-gray-900">{documents.length}</p>
+          <p className="text-2xl font-bold text-gray-900">{counts.total}</p>
           <p className="text-sm text-gray-500">Tổng cộng</p>
         </div>
         <div
@@ -235,7 +334,7 @@ export default function AdminDashboardPage() {
           onClick={() => setFilter('PENDING')}
         >
           <p className="text-2xl font-bold text-yellow-600">
-            {documents.filter((d) => d.status === 'PENDING').length}
+            {counts.pending}
           </p>
           <p className="text-sm text-gray-500">Chờ duyệt</p>
         </div>
@@ -246,7 +345,7 @@ export default function AdminDashboardPage() {
           onClick={() => setFilter('APPROVED')}
         >
           <p className="text-2xl font-bold text-green-600">
-            {documents.filter((d) => d.status === 'APPROVED').length}
+            {counts.approved}
           </p>
           <p className="text-sm text-gray-500">Đã duyệt</p>
         </div>
@@ -257,7 +356,7 @@ export default function AdminDashboardPage() {
           onClick={() => setFilter('REJECTED')}
         >
           <p className="text-2xl font-bold text-red-600">
-            {documents.filter((d) => d.status === 'REJECTED').length}
+            {counts.rejected}
           </p>
           <p className="text-sm text-gray-500">Từ chối</p>
         </div>

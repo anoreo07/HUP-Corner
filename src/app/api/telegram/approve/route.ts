@@ -1,8 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { getToken } from 'next-auth/jwt';
+import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
+
+const NEXTAUTH_SECRET = process.env.NEXTAUTH_SECRET || '';
 
 export async function POST(request: NextRequest) {
   try {
+    const token = await getToken({ req: request, secret: NEXTAUTH_SECRET });
+    if (!token || (token as any).role !== 'admin') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const { documentId } = await request.json();
 
     if (!documentId) {
@@ -12,13 +20,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // File đã được lưu trên Telegram từ lúc upload
-    // Chỉ cần cập nhật status thành APPROVED
-    const { data, error } = await supabase
+    const supabaseAdmin = getSupabaseAdmin();
+
+    const { data, error } = await supabaseAdmin
       .from('documents')
-      .update({ status: 'APPROVED' } as any)
+      .update({
+        status: 'APPROVED',
+        approved_at: new Date().toISOString(),
+      } as any)
       .eq('id', documentId)
-      .select()
+      .select('*, majors(*)')
       .single();
 
     if (error) throw error;

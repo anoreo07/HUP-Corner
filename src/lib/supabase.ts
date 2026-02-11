@@ -1,152 +1,149 @@
-import { createClient } from '@supabase/supabase-js';
-import { Major, Document, DocumentWithMajor, DocumentInsert } from '@/types/database';
+import { supabase } from './supabaseClient';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
-const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+// re-export client supabase for files that import `{ supabase }` from this module
+export { supabase };
 
-// Create client only if credentials are available
-export const supabase = createClient(supabaseUrl || 'https://placeholder.supabase.co', supabaseAnonKey || 'placeholder');
-
-// Create a separate client for server-side operations
-export const supabaseServer = createClient(
-  supabaseUrl || 'https://placeholder.supabase.co',
-  supabaseServiceRoleKey || 'placeholder'
-);
-
-// Helper functions
 export async function getMajors(): Promise<Major[]> {
   const { data, error } = await supabase
     .from('majors')
     .select('*')
     .order('name');
-  
+
   if (error) throw error;
   return (data || []) as Major[];
 }
 
 export async function getApprovedDocuments(majorCode?: string): Promise<DocumentWithMajor[]> {
-  let query = supabase
-    .from('documents')
-    .select('*, majors(*)')
-    .eq('status', 'APPROVED')
-    .order('created_at', { ascending: false });
-  
-  if (majorCode) {
-    const { data: major } = await supabase
-      .from('majors')
-      .select('id')
-      .eq('code', majorCode)
-      .single();
-    
-    if (major) {
-      query = query.eq('major_id', (major as Major).id);
+  // If running on the server, use the admin client directly to bypass RLS.
+  if (typeof window === 'undefined') {
+    const { getSupabaseAdmin } = await import('./supabaseAdmin');
+    const supabaseAdmin = getSupabaseAdmin();
+    let query = supabaseAdmin
+      .from('documents')
+      .select('*, majors(*)')
+      .eq('status', 'APPROVED')
+      .order('created_at', { ascending: false });
+
+    if (majorCode) {
+      const { data: major } = await supabaseAdmin
+        .from('majors')
+        .select('id')
+        .eq('code', majorCode)
+        .single();
+
+      if (major) {
+        query = query.eq('major_id', (major as Major).id);
+      }
     }
+
+    const { data, error } = await query;
+    if (error) throw error;
+    return (data || []) as DocumentWithMajor[];
   }
-  
-  const { data, error } = await query;
-  if (error) throw error;
-  return (data || []) as DocumentWithMajor[];
+
+  // Client-side: call server API route which uses the admin client
+  const url = majorCode ? `/api/documents/approved?majorCode=${encodeURIComponent(majorCode)}` : '/api/documents/approved';
+  const res = await fetch(url, { cache: 'no-store' });
+  if (!res.ok) throw new Error('Failed to fetch approved documents');
+  return (await res.json()) as DocumentWithMajor[];
 }
 
 export async function getPendingDocuments(): Promise<DocumentWithMajor[]> {
-  const { data, error } = await supabase
-    .from('documents')
-    .select('*, majors(*)')
-    .eq('status', 'PENDING')
-    .order('created_at', { ascending: false });
-  
-  if (error) throw error;
-  return (data || []) as DocumentWithMajor[];
+  if (typeof window === 'undefined') {
+    const { getSupabaseAdmin } = await import('./supabaseAdmin');
+    const supabaseAdmin = getSupabaseAdmin();
+    const { data, error } = await supabaseAdmin
+      .from('documents')
+      .select('*, majors(*)')
+      .eq('status', 'PENDING')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return (data || []) as DocumentWithMajor[];
+  }
+
+  const res = await fetch('/api/documents/pending', { cache: 'no-store' });
+  if (!res.ok) throw new Error('Failed to fetch pending documents');
+  return (await res.json()) as DocumentWithMajor[];
 }
 
 export async function getAllDocumentsForAdmin(): Promise<DocumentWithMajor[]> {
+  if (typeof window === 'undefined') {
+    const { getSupabaseAdmin } = await import('./supabaseAdmin');
+    const supabaseAdmin = getSupabaseAdmin();
+    const { data, error } = await supabaseAdmin
+      .from('documents')
+      .select('*, majors(*)')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return (data || []) as DocumentWithMajor[];
+  }
+
+  // Client-side: use anon supabase client directly. This avoids depending on
+  // server-side service role availability for read-only operations (useful
+  // when RLS is disabled or anon read access is allowed).
   const { data, error } = await supabase
     .from('documents')
     .select('*, majors(*)')
     .order('created_at', { ascending: false });
-  
+
   if (error) throw error;
   return (data || []) as DocumentWithMajor[];
 }
 
-// Update sensitive operations to use supabaseServer
 export async function uploadDocument(doc: DocumentInsert): Promise<Document> {
-  const { data, error } = await supabaseServer
-    .from('documents')
-    .insert(doc as any)
-    .select()
-    .single();
+  const response = await fetch('/api/documents/upload', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(doc),
+  });
 
-  if (error) throw error;
-  return data as Document;
+  if (!response.ok) {
+    throw new Error('Failed to upload document');
+  }
+
+  return response.json();
 }
 
 export async function approveDocument(id: string): Promise<Document> {
-  const { data, error } = await supabaseServer
-    .from('documents')
-    .update({ status: 'APPROVED' } as any)
-    .eq('id', id)
-    .select()
-    .single();
+  const response = await fetch(`/api/documents/approve`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id }),
+  });
 
-  if (error) throw error;
-  return data as Document;
+  if (!response.ok) {
+    throw new Error('Failed to approve document');
+  }
+
+  return response.json();
 }
 
 export async function rejectDocument(id: string): Promise<Document> {
-  const { data, error } = await supabaseServer
-    .from('documents')
-    .update({ status: 'REJECTED' } as any)
-    .eq('id', id)
-    .select()
-    .single();
+  const response = await fetch(`/api/documents/reject`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id }),
+  });
 
-  if (error) throw error;
-  return data as Document;
+  if (!response.ok) {
+    throw new Error('Failed to reject document');
+  }
+
+  return response.json();
 }
 
 export async function deleteDocument(id: string): Promise<boolean> {
-  const { error } = await supabaseServer
-    .from('documents')
-    .delete()
-    .eq('id', id);
+  const response = await fetch(`/api/documents/delete`, {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id }),
+  });
 
-  if (error) throw error;
+  if (!response.ok) {
+    throw new Error('Failed to delete document');
+  }
+
   return true;
-}
-
-export async function uploadFile(file: File): Promise<{
-  path: string;
-  name: string;
-  size: number;
-  mimeType: string;
-}> {
-  const timestamp = Date.now();
-  const sanitizedName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
-  const path = `uploads/${timestamp}_${sanitizedName}`;
-  
-  const { data, error } = await supabase.storage
-    .from('documents')
-    .upload(path, file);
-  
-  if (error) throw error;
-  return {
-    path: data.path,
-    name: file.name,
-    size: file.size,
-    mimeType: file.type,
-  };
-}
-
-export async function searchDocuments(query: string): Promise<DocumentWithMajor[]> {
-  const { data, error } = await supabase
-    .from('documents')
-    .select('*, majors(*)')
-    .eq('status', 'APPROVED')
-    .ilike('title', `%${query}%`)
-    .order('created_at', { ascending: false });
-  
-  if (error) throw error;
-  return (data || []) as DocumentWithMajor[];
 }

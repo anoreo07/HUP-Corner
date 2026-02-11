@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { signIn } from 'next-auth/react';
 import { Button, Input, Title, Password } from 'rizzui';
 import { PiLockKeyBold } from 'react-icons/pi';
 
@@ -15,24 +16,18 @@ export default function AdminLoginPage() {
     e.preventDefault();
     setLoading(true);
     setError('');
-
     try {
-      const res = await fetch('/api/admin/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password }),
-      });
-
-      if (res.ok) {
-        localStorage.setItem('isAdmin', 'true');
-        localStorage.setItem('adminLoginTime', Date.now().toString());
+      const res = await signIn('admin-password', {
+        redirect: false,
+        password,
+      } as any);
+      if (res?.ok) {
         router.push('/admin/dashboard');
       } else {
-        const data = await res.json();
-        setError(data.error || 'Mật khẩu không đúng');
+        setError((res as any)?.error || 'Mật khẩu không đúng');
         setLoading(false);
       }
-    } catch {
+    } catch (err) {
       setError('Có lỗi xảy ra');
       setLoading(false);
     }

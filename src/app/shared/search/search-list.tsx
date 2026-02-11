@@ -21,7 +21,6 @@ import {
   PiImage,
 } from 'react-icons/pi';
 import { DocumentWithMajor, DocumentType } from '@/types/database';
-import { supabase } from '@/lib/supabase';
 import DocumentDetailModal from '@/app/shared/document-detail-modal';
 
 const documentTypeLabels: Record<DocumentType, string> = {
@@ -81,15 +80,9 @@ export default function SearchList({ onClose }: { onClose?: () => void }) {
 
     setIsLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('documents')
-        .select('*, majors(*)')
-        .eq('status', 'APPROVED')
-        .ilike('title', `%${query}%`)
-        .order('created_at', { ascending: false })
-        .limit(10);
-
-      if (error) throw error;
+      const res = await fetch(`/api/documents/search?q=${encodeURIComponent(query)}`);
+      if (!res.ok) throw new Error('Search failed');
+      const data = await res.json();
       setDocuments(data || []);
     } catch (err) {
       console.error('Search error:', err);

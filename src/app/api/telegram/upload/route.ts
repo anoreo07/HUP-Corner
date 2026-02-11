@@ -1,10 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { uploadFileChunked } from '@/lib/telegram';
+import { rateLimiter } from '@/middleware/rate-limit';
 
 export const runtime = 'nodejs';
 
 // Allow up to 50MB
 export const maxDuration = 120;
+
+export async function middleware(request: NextRequest) {
+  return new Promise((resolve, reject) => {
+    rateLimiter(request as any, {} as any, (result: any) => {
+      if (result instanceof Error) {
+        reject(result);
+      } else {
+        resolve(NextResponse.next());
+      }
+    });
+  });
+}
 
 export async function POST(request: NextRequest) {
   try {

@@ -1,9 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { getToken } from 'next-auth/jwt';
+import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { deleteMessageFromTelegram, parseTelegramFilePath } from '@/lib/telegram';
+
+const NEXTAUTH_SECRET = process.env.NEXTAUTH_SECRET || '';
 
 export async function POST(request: NextRequest) {
   try {
+    const token = await getToken({ req: request, secret: NEXTAUTH_SECRET });
+    if (!token || (token as any).role !== 'admin') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const { documentId } = await request.json();
 
     if (!documentId) {
@@ -14,17 +22,16 @@ export async function POST(request: NextRequest) {
     }
 
     // 1. Get document to find Telegram message_id
-    const { data: doc, error: docError } = await supabase
+    const supabaseAdmin = getSupabaseAdmin();
+
+    const { data: doc, error: docError } = await supabaseAdmin
       .from('documents')
       .select('*')
       .eq('id', documentId)
       .single();
 
     if (docError || !doc) {
-      return NextResponse.json(
-        { error: 'Document not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Document not found' }, { status: 404 });
     }
 
     // 2. Delete message from Telegram channel if it's stored there
@@ -36,7 +43,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 3. Delete document record from Supabase
-    const { error: deleteError } = await supabase
+    const { error: deleteError } = await supabaseAdmin
       .from('documents')
       .delete()
       .eq('id', documentId);

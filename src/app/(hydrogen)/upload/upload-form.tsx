@@ -102,7 +102,7 @@ export default function UploadForm() {
       const telegramData = uploadResult.data;
 
       // Lưu record vào Supabase DB với status PENDING
-      await uploadDocument({
+      const saved = await uploadDocument({
         title: formData.title,
         document_type: formData.documentType as DocumentType,
         major_id: formData.majorId && formData.majorId !== '__FREE__' ? formData.majorId : null,
@@ -114,6 +114,20 @@ export default function UploadForm() {
         file_size: telegramData.file_size,
         mime_type: telegramData.mime_type,
       });
+
+      // Notify other tabs (admin dashboard) that a new document was uploaded
+      try {
+        if (typeof BroadcastChannel !== 'undefined') {
+          const bc = new BroadcastChannel('documents');
+          bc.postMessage({ type: 'uploaded', id: saved?.id });
+          bc.close();
+        } else if (typeof window !== 'undefined') {
+          // fallback: use localStorage event
+          localStorage.setItem('documents-updated', String(Date.now()));
+        }
+      } catch (err) {
+        // no-op
+      }
 
       setIsSubmitted(true);
     } catch (err: any) {

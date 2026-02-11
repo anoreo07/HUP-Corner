@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 
 // The majors that match the hardcoded routes in the app
 const SEED_MAJORS = [
@@ -13,9 +13,11 @@ export async function POST() {
   try {
     const results = [];
 
+    const supabaseAdmin = getSupabaseAdmin();
+
     for (const major of SEED_MAJORS) {
       // Check if major already exists
-      const { data: existing } = await supabase
+      const { data: existing } = await supabaseAdmin
         .from('majors')
         .select()
         .eq('code', major.code)
@@ -27,7 +29,7 @@ export async function POST() {
       }
 
       // Insert new major
-      const { data: inserted, error: insertError } = await supabase
+      const { data: inserted, error: insertError } = await supabaseAdmin
         .from('majors')
         .insert({ code: major.code, name: major.name })
         .select()

@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
+import Logo from '@core/components/logo';
 import { Title, Button } from 'rizzui';
 import { PiHouseLineBold } from 'react-icons/pi';
 import SocialItems from '@core/ui/social-shares';
@@ -11,12 +12,7 @@ export default function NotFound() {
     <div className="flex min-h-screen flex-col bg-[#F8FAFC]">
       <div className="sticky top-0 z-40 flex justify-center py-5 backdrop-blur-lg lg:backdrop-blur-none xl:py-10">
         <Link href="/">
-          <Image
-            src={siteConfig.logo}
-            alt={siteConfig.title}
-            className="dark:invert"
-            priority
-          />
+          <Logo className="dark:invert" />
         </Link>
       </div>
 
