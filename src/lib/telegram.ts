@@ -234,7 +234,22 @@ export async function uploadFileChunked(
 }
 
 /**
+ * Error thrown when a legacy (non-chunked) file exceeds Telegram's 20MB getFile limit.
+ */
+export class TelegramFileTooLargeError extends Error {
+  code = 'TELEGRAM_FILE_TOO_LARGE';
+  constructor(message?: string) {
+    super(
+      message ||
+        'File quá lớn (>20 MB). File này được tải lên trước khi hỗ trợ chia nhỏ file. Vui lòng liên hệ admin để tải lên lại.'
+    );
+    this.name = 'TelegramFileTooLargeError';
+  }
+}
+
+/**
  * Download a file from Telegram, reassembling chunks if needed.
+ * Throws TelegramFileTooLargeError for legacy files >20MB.
  */
 export async function downloadFileAuto(filePath: string): Promise<{
   buffer: Buffer;
@@ -242,9 +257,20 @@ export async function downloadFileAuto(filePath: string): Promise<{
   const parsed = parseTelegramFilePath(filePath);
 
   if (!parsed.isChunked) {
-    // Single file download
-    const { buffer } = await downloadFileFromTelegram(parsed.fileId);
-    return { buffer };
+    // Single file download — may fail for legacy >20MB files
+    try {
+      const { buffer } = await downloadFileFromTelegram(parsed.fileId);
+      return { buffer };
+    } catch (err: any) {
+      if (
+        err.message &&
+        (err.message.includes('file is too big') ||
+          err.message.includes('file_too_big'))
+      ) {
+        throw new TelegramFileTooLargeError();
+      }
+      throw err;
+    }
   }
 
   // Download all chunks and concatenate

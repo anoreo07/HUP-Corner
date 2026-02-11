@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { downloadFileAuto } from '@/lib/telegram';
+import { downloadFileAuto, TelegramFileTooLargeError } from '@/lib/telegram';
 
 export const runtime = 'nodejs';
 export const maxDuration = 120;
@@ -33,6 +33,12 @@ export async function GET(request: NextRequest) {
     });
   } catch (error: any) {
     console.error('Telegram download error:', error);
+    if (error instanceof TelegramFileTooLargeError) {
+      return NextResponse.json(
+        { error: error.message, code: 'TELEGRAM_FILE_TOO_LARGE' },
+        { status: 413 }
+      );
+    }
     return NextResponse.json(
       { error: error.message || 'Download failed' },
       { status: 500 }

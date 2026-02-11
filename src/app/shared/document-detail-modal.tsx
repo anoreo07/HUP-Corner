@@ -120,6 +120,14 @@ export default function DocumentDetailModal({
         );
 
         if (!response.ok) {
+          const data = await response.json().catch(() => null);
+          if (data?.code === 'TELEGRAM_FILE_TOO_LARGE') {
+            toast.error(
+              'File quá lớn (>20 MB) và được tải lên trước khi hỗ trợ chia nhỏ. Vui lòng liên hệ admin để tải lên lại.',
+              { duration: 6000 }
+            );
+            return;
+          }
           throw new Error('Download failed');
         }
 
