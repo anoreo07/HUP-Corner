@@ -52,15 +52,13 @@ function getPreviewType(mimeType: string | null): PreviewType {
   if (!mimeType) return 'none';
   if (mimeType.includes('pdf')) return 'pdf';
   if (mimeType.includes('image')) return 'image';
-  // PPTX must be checked before Word because both mime types contain "document"
-  // e.g. "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+  if (mimeType.includes('word') || mimeType.includes('document')) return 'word';
   if (
     mimeType.includes('presentation') ||
     mimeType.includes('pptx') ||
     mimeType.includes('powerpoint')
   )
     return 'pptx';
-  if (mimeType.includes('word') || mimeType.includes('document')) return 'word';
   return 'none';
 }
 
