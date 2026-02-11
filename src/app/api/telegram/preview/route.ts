@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { downloadFileFromTelegram, parseTelegramFilePath } from '@/lib/telegram';
+import { downloadFileAuto } from '@/lib/telegram';
 
 export const runtime = 'nodejs';
-export const maxDuration = 60;
+export const maxDuration = 120;
 export const dynamic = 'force-dynamic';
 
 /**
  * Serve file with correct Content-Type for inline preview (PDF, images).
- * For Office files (docx, pptx), the client uses Microsoft Office Online viewer.
  */
 export async function GET(request: NextRequest) {
   try {
@@ -22,15 +21,12 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const { fileId: actualFileId } = parseTelegramFilePath(fileId);
-    const { buffer } = await downloadFileFromTelegram(actualFileId);
+    const { buffer } = await downloadFileAuto(fileId);
 
     const headers = new Headers();
     headers.set('Content-Type', mimeType);
     headers.set('Content-Length', buffer.length.toString());
-    // Inline display, not download
     headers.set('Content-Disposition', 'inline');
-    // Cache for 1 hour
     headers.set('Cache-Control', 'public, max-age=3600');
 
     return new NextResponse(buffer, { status: 200, headers });

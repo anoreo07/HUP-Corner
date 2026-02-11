@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { uploadFileToTelegram } from '@/lib/telegram';
+import { uploadFileChunked } from '@/lib/telegram';
 
 export const runtime = 'nodejs';
 
 // Allow up to 50MB
-export const maxDuration = 60;
+export const maxDuration = 120;
 
 export async function POST(request: NextRequest) {
   try {
@@ -31,8 +31,8 @@ export async function POST(request: NextRequest) {
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    // Upload to Telegram channel
-    const result = await uploadFileToTelegram(
+    // Upload to Telegram — auto-chunks if > 19MB
+    const result = await uploadFileChunked(
       buffer,
       file.name,
       file.type || 'application/octet-stream',
@@ -42,8 +42,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       data: {
-        file_id: `${result.file_id}|${result.message_id}`,
-        file_unique_id: result.file_unique_id,
+        file_id: result.file_path,
+        file_unique_id: result.file_path,
         file_name: result.file_name,
         file_size: result.file_size,
         mime_type: result.mime_type,

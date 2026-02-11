@@ -311,7 +311,7 @@ export default function DocumentDetailModal({
                   )}
                   <Button
                     size="sm"
-                    className="flex items-center gap-1.5 bg-blue-500 hover:bg-blue-600"
+                    className="flex items-center gap-1.5 bg-blue-500 hover:bg-blue-600 disabled:opacity-50"
                     onClick={handleDownload}
                     isLoading={downloading}
                     disabled={downloading}
@@ -323,6 +323,7 @@ export default function DocumentDetailModal({
               </div>
             </div>
           </div>
+
         </div>
 
         {/* Footer */}

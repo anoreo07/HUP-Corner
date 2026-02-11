@@ -127,14 +127,132 @@ export async function deleteMessageFromTelegram(messageId: number): Promise<bool
 
 /**
  * Parse file_path stored as "file_id|message_id" format
+ * Also supports chunked format: "chunk:file_id1|msg1,file_id2|msg2,..."
  */
 export function parseTelegramFilePath(filePath: string): {
   fileId: string;
   messageId: number | null;
+  isChunked: boolean;
+  chunks: { fileId: string; messageId: number | null }[];
 } {
+  // Chunked file format: "chunk:fileId1|msgId1,fileId2|msgId2,..."
+  if (filePath.startsWith('chunk:')) {
+    const chunkData = filePath.slice(6); // remove "chunk:" prefix
+    const chunks = chunkData.split(',').map((part) => {
+      const [fid, mid] = part.split('|');
+      return {
+        fileId: fid,
+        messageId: mid ? parseInt(mid, 10) : null,
+      };
+    });
+    return {
+      fileId: chunks[0].fileId,
+      messageId: chunks[0].messageId,
+      isChunked: true,
+      chunks,
+    };
+  }
+
+  // Regular single-file format: "file_id|message_id"
   const parts = filePath.split('|');
   return {
     fileId: parts[0],
     messageId: parts[1] ? parseInt(parts[1], 10) : null,
+    isChunked: false,
+    chunks: [
+      {
+        fileId: parts[0],
+        messageId: parts[1] ? parseInt(parts[1], 10) : null,
+      },
+    ],
   };
+}
+
+// Telegram Bot API getFile limit: 20MB
+const TELEGRAM_CHUNK_SIZE = 19 * 1024 * 1024; // 19MB to be safe
+
+/**
+ * Upload a large file to Telegram by splitting into chunks.
+ * Each chunk is uploaded as a separate document.
+ * Returns a composite file_path string: "chunk:fileId1|msgId1,fileId2|msgId2,..."
+ */
+export async function uploadFileChunked(
+  fileBuffer: Buffer,
+  fileName: string,
+  mimeType: string,
+  caption?: string
+): Promise<{
+  file_path: string;
+  file_name: string;
+  file_size: number;
+  mime_type: string;
+}> {
+  const totalSize = fileBuffer.length;
+
+  // If small enough, use single upload
+  if (totalSize <= TELEGRAM_CHUNK_SIZE) {
+    const result = await uploadFileToTelegram(fileBuffer, fileName, mimeType, caption);
+    return {
+      file_path: `${result.file_id}|${result.message_id}`,
+      file_name: result.file_name,
+      file_size: result.file_size,
+      mime_type: result.mime_type,
+    };
+  }
+
+  // Split into chunks
+  const chunkCount = Math.ceil(totalSize / TELEGRAM_CHUNK_SIZE);
+  const chunkParts: string[] = [];
+
+  for (let i = 0; i < chunkCount; i++) {
+    const start = i * TELEGRAM_CHUNK_SIZE;
+    const end = Math.min(start + TELEGRAM_CHUNK_SIZE, totalSize);
+    const chunkBuffer = fileBuffer.subarray(start, end);
+
+    const chunkName = `${fileName}.part${i + 1}of${chunkCount}`;
+    const chunkCaption =
+      i === 0
+        ? `📄 ${caption || fileName} (phần ${i + 1}/${chunkCount})`
+        : `📄 phần ${i + 1}/${chunkCount}`;
+
+    const result = await uploadFileToTelegram(
+      Buffer.from(chunkBuffer),
+      chunkName,
+      'application/octet-stream',
+      chunkCaption
+    );
+
+    chunkParts.push(`${result.file_id}|${result.message_id}`);
+  }
+
+  return {
+    file_path: `chunk:${chunkParts.join(',')}`,
+    file_name: fileName,
+    file_size: totalSize,
+    mime_type: mimeType,
+  };
+}
+
+/**
+ * Download a file from Telegram, reassembling chunks if needed.
+ */
+export async function downloadFileAuto(filePath: string): Promise<{
+  buffer: Buffer;
+}> {
+  const parsed = parseTelegramFilePath(filePath);
+
+  if (!parsed.isChunked) {
+    // Single file download
+    const { buffer } = await downloadFileFromTelegram(parsed.fileId);
+    return { buffer };
+  }
+
+  // Download all chunks and concatenate
+  const buffers: Buffer[] = [];
+  for (const chunk of parsed.chunks) {
+    const { buffer } = await downloadFileFromTelegram(chunk.fileId);
+    buffers.push(buffer);
+  }
+
+  return { buffer: Buffer.concat(buffers) };
 }

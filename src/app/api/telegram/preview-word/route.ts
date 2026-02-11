@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import mammoth from 'mammoth';
-import { downloadFileFromTelegram, parseTelegramFilePath } from '@/lib/telegram';
+import { downloadFileAuto } from '@/lib/telegram';
 
 export const runtime = 'nodejs';
-export const maxDuration = 60;
+export const maxDuration = 120;
 export const dynamic = 'force-dynamic';
 
 /**
@@ -22,8 +22,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const { fileId: actualFileId } = parseTelegramFilePath(fileId);
-    const { buffer } = await downloadFileFromTelegram(actualFileId);
+    const { buffer } = await downloadFileAuto(fileId);
 
     // Convert docx to HTML using mammoth
     const result = await mammoth.convertToHtml(

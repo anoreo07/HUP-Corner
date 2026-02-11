@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { downloadFileFromTelegram, parseTelegramFilePath } from '@/lib/telegram';
+import { downloadFileAuto } from '@/lib/telegram';
 
 export const runtime = 'nodejs';
-export const maxDuration = 60;
+export const maxDuration = 120;
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
@@ -18,11 +18,8 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Parse file_id (may contain |message_id suffix)
-    const { fileId: actualFileId } = parseTelegramFilePath(fileId);
-
-    // Download file from Telegram
-    const { buffer } = await downloadFileFromTelegram(actualFileId);
+    // Download file — auto-reassembles chunks if needed
+    const { buffer } = await downloadFileAuto(fileId);
 
     // Return file as download
     const headers = new Headers();
