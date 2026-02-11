@@ -46,25 +46,28 @@ const formatFileSize = (bytes: number | null) => {
   return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
 };
 
-type PreviewType = 'pdf' | 'image' | 'office' | 'none';
+type PreviewType = 'pdf' | 'image' | 'word' | 'pptx' | 'none';
 
 function getPreviewType(mimeType: string | null): PreviewType {
   if (!mimeType) return 'none';
   if (mimeType.includes('pdf')) return 'pdf';
   if (mimeType.includes('image')) return 'image';
+  if (mimeType.includes('word') || mimeType.includes('document')) return 'word';
   if (
-    mimeType.includes('word') ||
-    mimeType.includes('document') ||
     mimeType.includes('presentation') ||
     mimeType.includes('pptx') ||
     mimeType.includes('powerpoint')
   )
-    return 'office';
+    return 'pptx';
   return 'none';
 }
 
-function getPreviewUrl(document: DocumentWithMajor): string {
+function getPreviewUrl(document: DocumentWithMajor, type: PreviewType): string {
   if (document.storage_provider === 'telegram') {
+    // Word uses dedicated mammoth conversion endpoint
+    if (type === 'word') {
+      return `/api/telegram/preview-word?fileId=${encodeURIComponent(document.file_path)}`;
+    }
     return `/api/telegram/preview?fileId=${encodeURIComponent(document.file_path)}&mimeType=${encodeURIComponent(document.mime_type || 'application/octet-stream')}`;
   }
   const { data } = supabase.storage.from('documents').getPublicUrl(document.file_path);
@@ -91,13 +94,17 @@ export default function DocumentDetailModal({
     [document]
   );
 
-  // Build absolute URL for Office viewers (they need public URLs)
+  // Build absolute URL for external viewers (Google Docs Viewer needs public URLs)
   const previewUrl = useMemo(() => {
     if (!document) return '';
-    const relativeUrl = getPreviewUrl(document);
+    const relativeUrl = getPreviewUrl(document, previewType);
     if (relativeUrl.startsWith('http')) return relativeUrl;
-    return `${window.location.origin}${relativeUrl}`;
-  }, [document]);
+    // PPTX needs absolute URL for Google Docs Viewer
+    if (previewType === 'pptx') {
+      return `${window.location.origin}${relativeUrl}`;
+    }
+    return relativeUrl;
+  }, [document, previewType]);
 
   if (!document) return null;
 
@@ -210,12 +217,22 @@ export default function DocumentDetailModal({
               </div>
             )}
 
-            {previewType === 'office' && (
+            {previewType === 'word' && (
+              <iframe
+                src={previewUrl}
+                className="w-full border-0 bg-white"
+                style={{ height: '70vh' }}
+                title="Word Preview"
+                onLoad={() => setPreviewLoading(false)}
+              />
+            )}
+
+            {previewType === 'pptx' && (
               <iframe
                 src={`https://docs.google.com/gview?url=${encodeURIComponent(previewUrl)}&embedded=true`}
                 className="w-full border-0"
                 style={{ height: '70vh' }}
-                title="Office Preview"
+                title="PPTX Preview"
                 onLoad={() => setPreviewLoading(false)}
               />
             )}
