@@ -11,9 +11,9 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export default async function TrangChuPage() {
-  // Fetch latest 5 approved documents from Supabase
+  // Fetch approved documents from Supabase and pass all to client-side
+  // LatestDocuments will paginate and show the most recent items first.
   const allDocuments = await getApprovedDocuments();
-  const latestDocuments = allDocuments.slice(0, 5);
 
   return (
     <div className="flex flex-col gap-8">
@@ -49,7 +49,7 @@ export default async function TrangChuPage() {
         <h2 className="text-xl font-semibold text-gray-900 mb-6 flex items-center gap-2">
           <span className="text-2xl">📄</span> Tài Liệu Mới Nhất
         </h2>
-        <LatestDocuments documents={latestDocuments} />
+        <LatestDocuments documents={allDocuments} />
       </div>
     </div>
   );

@@ -49,6 +49,54 @@ export async function getApprovedDocuments(majorCode?: string): Promise<Document
   return (await res.json()) as DocumentWithMajor[];
 }
 
+export async function getApprovedDocumentsPaginated(
+  majorCode?: string,
+  page: number = 1,
+  perPage: number = 12
+): Promise<{ data: DocumentWithMajor[]; count: number; page: number; perPage: number; totalPages: number }> {
+  const start = (page - 1) * perPage;
+  const end = start + perPage - 1;
+
+  // If running on the server, use the admin client directly to bypass RLS and get exact count.
+  if (typeof window === 'undefined') {
+    const { getSupabaseAdmin } = await import('./supabaseAdmin');
+    const supabaseAdmin = getSupabaseAdmin();
+
+    let query = supabaseAdmin
+      .from('documents')
+      .select('*, majors(*)', { count: 'exact' })
+      .eq('status', 'APPROVED')
+      .order('created_at', { ascending: false })
+      .range(start, end);
+
+    if (majorCode) {
+      const { data: major } = await supabaseAdmin
+        .from('majors')
+        .select('id')
+        .eq('code', majorCode)
+        .single();
+
+      if (major) {
+        query = query.eq('major_id', (major as Major).id);
+      }
+    }
+
+    const { data, error, count } = await query;
+    if (error) throw error;
+    const total = count ?? 0;
+    const totalPages = Math.max(1, Math.ceil(total / perPage));
+    return { data: (data || []) as DocumentWithMajor[], count: total, page, perPage, totalPages };
+  }
+
+  // Client-side: call server API route which uses the admin client
+  const url = majorCode
+    ? `/api/documents/approved?majorCode=${encodeURIComponent(majorCode)}&page=${page}&perPage=${perPage}`
+    : `/api/documents/approved?page=${page}&perPage=${perPage}`;
+  const res = await fetch(url, { cache: 'no-store' });
+  if (!res.ok) throw new Error('Failed to fetch approved documents');
+  return (await res.json()) as { data: DocumentWithMajor[]; count: number; page: number; perPage: number; totalPages: number };
+}
+
 export async function getPendingDocuments(): Promise<DocumentWithMajor[]> {
   if (typeof window === 'undefined') {
     const { getSupabaseAdmin } = await import('./supabaseAdmin');

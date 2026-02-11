@@ -42,15 +42,18 @@ export function SidebarMenu() {
                 </div>
               </Link>
             ) : (
-              <Title
-                as="h6"
-                className={cn(
-                  'mb-2 truncate px-6 text-xs font-normal uppercase tracking-widest text-gray-500 2xl:px-8',
-                  index !== 0 && 'mt-6 3xl:mt-7'
-                )}
-              >
-                {item.name}
-              </Title>
+              <>
+                {index !== 0 && <div className="mx-6 mt-4 mb-2 border-t border-gray-200" />}
+                <Title
+                  as="h6"
+                  className={cn(
+                    'mb-2 truncate px-6 text-xs font-normal uppercase tracking-widest text-gray-500 2xl:px-8',
+                    index !== 0 && 'mt-2 3xl:mt-3'
+                  )}
+                >
+                  {item.name}
+                </Title>
+              </>
             )}
           </Fragment>
         );
