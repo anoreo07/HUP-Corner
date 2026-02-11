@@ -43,3 +43,12 @@ export interface DocumentInsert {
   file_size?: number | null;
   mime_type?: string | null;
 }
+
+export interface Notification {
+  id: string;
+  title: string;
+  description: string | null;
+  published: boolean;
+  created_at: string;
+}
+

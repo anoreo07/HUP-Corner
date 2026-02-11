@@ -1,7 +1,8 @@
 import { metaObject } from '@/config/site.config';
 import Image from 'next/image';
-import { getApprovedDocuments } from '@/lib/supabase';
+import { getApprovedDocuments, getNotifications } from '@/lib/supabase';
 import LatestDocuments from './latest-documents';
+import NotificationsBar from '@/app/shared/notifications-bar';
 
 export const metadata = {
   ...metaObject('Trang Chủ'),
@@ -14,9 +15,13 @@ export default async function TrangChuPage() {
   // Fetch approved documents from Supabase and pass all to client-side
   // LatestDocuments will paginate and show the most recent items first.
   const allDocuments = await getApprovedDocuments();
+  const notifications = await getNotifications();
 
   return (
     <div className="flex flex-col gap-8">
+      {/* Notifications (admin) */}
+      <NotificationsBar notifications={notifications} />
+
       {/* Hero Section */}
       <div className="rounded-2xl bg-gradient-to-br from-primary/10 via-white to-primary/5 p-8 shadow-sm border border-gray-100">
         <div className="flex flex-col items-center text-center">

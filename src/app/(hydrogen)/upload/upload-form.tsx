@@ -15,7 +15,7 @@ const documentTypeOptions = [
 
 // Chỉ hiển thị 4 ngành chính + Tự do
 const ALLOWED_MAJOR_CODES = ['HOA_DUOC', 'CONG_NGHE_SINH_HOC', 'HOA_HOC', 'DUOC_HOC'];
-const FREE_OPTION = { value: '__FREE__', label: 'Tự do' };
+const FREE_OPTION = { value: '__FREE__', label: 'Khác' };
 
 export default function UploadForm() {
   const [majors, setMajors] = useState<Major[]>([]);

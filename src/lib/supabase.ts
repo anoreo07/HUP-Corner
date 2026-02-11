@@ -155,6 +155,27 @@ export async function uploadDocument(doc: DocumentInsert): Promise<Document> {
   return response.json();
 }
 
+export async function getNotifications(): Promise<import('@/types/database').Notification[]> {
+  // Server-side: use admin client to bypass RLS
+  if (typeof window === 'undefined') {
+    const { getSupabaseAdmin } = await import('./supabaseAdmin');
+    const supabaseAdmin = getSupabaseAdmin();
+    const { data, error } = await supabaseAdmin
+      .from('notifications')
+      .select('*')
+      .eq('published', true)
+      .order('created_at', { ascending: false })
+      .limit(5);
+
+    if (error) throw error;
+    return (data || []) as import('@/types/database').Notification[];
+  }
+
+  const res = await fetch('/api/notifications', { cache: 'no-store' });
+  if (!res.ok) throw new Error('Failed to fetch notifications');
+  return (await res.json()) as import('@/types/database').Notification[];
+}
+
 export async function approveDocument(id: string): Promise<Document> {
   const response = await fetch(`/api/documents/approve`, {
     method: 'POST',
