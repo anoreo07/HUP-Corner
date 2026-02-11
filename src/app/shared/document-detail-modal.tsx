@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Modal, ActionIcon, Button } from 'rizzui';
 import {
   PiXBold,
@@ -11,6 +11,8 @@ import {
   PiFolderOpen,
   PiImage,
   PiFileTextDuotone,
+  PiEyeBold,
+  PiArrowsOutBold,
 } from 'react-icons/pi';
 import { DocumentWithMajor, DocumentType } from '@/types/database';
 import { supabase } from '@/lib/supabase';
@@ -44,6 +46,31 @@ const formatFileSize = (bytes: number | null) => {
   return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
 };
 
+type PreviewType = 'pdf' | 'image' | 'office' | 'none';
+
+function getPreviewType(mimeType: string | null): PreviewType {
+  if (!mimeType) return 'none';
+  if (mimeType.includes('pdf')) return 'pdf';
+  if (mimeType.includes('image')) return 'image';
+  if (
+    mimeType.includes('word') ||
+    mimeType.includes('document') ||
+    mimeType.includes('presentation') ||
+    mimeType.includes('pptx') ||
+    mimeType.includes('powerpoint')
+  )
+    return 'office';
+  return 'none';
+}
+
+function getPreviewUrl(document: DocumentWithMajor): string {
+  if (document.storage_provider === 'telegram') {
+    return `/api/telegram/preview?fileId=${encodeURIComponent(document.file_path)}&mimeType=${encodeURIComponent(document.mime_type || 'application/octet-stream')}`;
+  }
+  const { data } = supabase.storage.from('documents').getPublicUrl(document.file_path);
+  return data.publicUrl;
+}
+
 interface DocumentDetailModalProps {
   document: DocumentWithMajor | null;
   isOpen: boolean;
@@ -56,8 +83,18 @@ export default function DocumentDetailModal({
   onClose,
 }: DocumentDetailModalProps) {
   const [downloading, setDownloading] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
+  const [previewLoading, setPreviewLoading] = useState(false);
+
+  const previewType = useMemo(
+    () => (document ? getPreviewType(document.mime_type) : 'none'),
+    [document]
+  );
 
   if (!document) return null;
+
+  const previewUrl = getPreviewUrl(document);
+  const canPreview = previewType !== 'none';
 
   const handleDownload = async () => {
     if (document.storage_provider === 'telegram') {
@@ -98,13 +135,16 @@ export default function DocumentDetailModal({
   return (
     <Modal
       isOpen={isOpen}
-      onClose={onClose}
-      size="xl"
+      onClose={() => {
+        setShowPreview(false);
+        onClose();
+      }}
+      size={showPreview ? 'full' : 'xl'}
       overlayClassName="dark:bg-opacity-40 dark:bg-gray-50 dark:backdrop-blur-sm"
       containerClassName="!items-start !pt-10"
       className="z-[9999] !p-0 overflow-hidden"
     >
-      <div className="flex flex-col max-h-[85vh]">
+      <div className="flex flex-col max-h-[90vh]">
         {/* Header */}
         <div className="bg-white border-b border-gray-200 p-6">
           <div className="flex items-start justify-between gap-4">
@@ -115,12 +155,65 @@ export default function DocumentDetailModal({
               variant="text"
               size="sm"
               className="text-gray-500 hover:text-gray-700 shrink-0"
-              onClick={onClose}
+              onClick={() => {
+                setShowPreview(false);
+                onClose();
+              }}
             >
               <PiXBold className="h-5 w-5" />
             </ActionIcon>
           </div>
         </div>
+
+        {/* Preview Section */}
+        {showPreview && (
+          <div className="relative bg-gray-100 border-b border-gray-200">
+            {previewLoading && (
+              <div className="absolute inset-0 z-10 flex items-center justify-center bg-gray-100">
+                <div className="flex flex-col items-center gap-2">
+                  <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-300 border-t-blue-500" />
+                  <span className="text-sm text-gray-500">Đang tải xem trước...</span>
+                </div>
+              </div>
+            )}
+
+            {previewType === 'pdf' && (
+              <iframe
+                src={previewUrl}
+                className="w-full border-0"
+                style={{ height: '70vh' }}
+                title="PDF Preview"
+                onLoad={() => setPreviewLoading(false)}
+              />
+            )}
+
+            {previewType === 'image' && (
+              <div className="flex items-center justify-center p-4" style={{ maxHeight: '70vh' }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={previewUrl}
+                  alt={document.title}
+                  className="max-h-[65vh] max-w-full rounded-lg object-contain shadow-lg"
+                  onLoad={() => setPreviewLoading(false)}
+                  onError={() => {
+                    setPreviewLoading(false);
+                    toast.error('Không thể tải ảnh xem trước');
+                  }}
+                />
+              </div>
+            )}
+
+            {previewType === 'office' && (
+              <iframe
+                src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(previewUrl)}`}
+                className="w-full border-0"
+                style={{ height: '70vh' }}
+                title="Office Preview"
+                onLoad={() => setPreviewLoading(false)}
+              />
+            )}
+          </div>
+        )}
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto bg-white p-6">
@@ -167,16 +260,42 @@ export default function DocumentDetailModal({
                     </p>
                   </div>
                 </div>
-                <Button
-                  size="sm"
-                  className="flex items-center gap-1.5 bg-blue-500 hover:bg-blue-600"
-                  onClick={handleDownload}
-                  isLoading={downloading}
-                  disabled={downloading}
-                >
-                  <PiDownloadSimpleBold className="h-4 w-4" />
-                  {downloading ? 'ĐANG TẢI...' : 'DOWNLOAD'}
-                </Button>
+                <div className="flex items-center gap-2">
+                  {canPreview && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="flex items-center gap-1.5 border-emerald-300 text-emerald-600 hover:bg-emerald-50"
+                      onClick={() => {
+                        setPreviewLoading(true);
+                        setShowPreview(!showPreview);
+                        if (showPreview) setPreviewLoading(false);
+                      }}
+                    >
+                      {showPreview ? (
+                        <>
+                          <PiArrowsOutBold className="h-4 w-4" />
+                          ẨN
+                        </>
+                      ) : (
+                        <>
+                          <PiEyeBold className="h-4 w-4" />
+                          XEM TRƯỚC
+                        </>
+                      )}
+                    </Button>
+                  )}
+                  <Button
+                    size="sm"
+                    className="flex items-center gap-1.5 bg-blue-500 hover:bg-blue-600"
+                    onClick={handleDownload}
+                    isLoading={downloading}
+                    disabled={downloading}
+                  >
+                    <PiDownloadSimpleBold className="h-4 w-4" />
+                    {downloading ? 'ĐANG TẢI...' : 'DOWNLOAD'}
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
