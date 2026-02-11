@@ -1,4 +1,5 @@
 import { supabase } from './supabaseClient';
+import type { Major, DocumentWithMajor, Document, DocumentInsert, DocumentType } from '@/types/database';
 
 // re-export client supabase for files that import `{ supabase }` from this module
 export { supabase };

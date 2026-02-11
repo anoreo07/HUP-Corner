@@ -1,26 +1,49 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { uploadFileChunked } from '@/lib/telegram';
-import { rateLimiter } from '@/middleware/rate-limit';
 
 export const runtime = 'nodejs';
 
 // Allow up to 50MB
 export const maxDuration = 120;
 
-export async function middleware(request: NextRequest) {
-  return new Promise((resolve, reject) => {
-    rateLimiter(request as any, {} as any, (result: any) => {
-      if (result instanceof Error) {
-        reject(result);
-      } else {
-        resolve(NextResponse.next());
+// Note: Next.js Route files must not export a `middleware` function.
+// The project previously attempted to run the Express-style `rateLimiter`
+// here which is not a valid Route export. Implement a small in-route
+// rate limiter to preserve similar behavior without exporting `middleware`.
+
+const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000; // 15 minutes
+const RATE_LIMIT_MAX = 100;
+const _rateMap = new Map<string, { count: number; reset: number }>();
+
+function checkRateLimit(request: NextRequest) {
+  const forwarded = request.headers.get('x-forwarded-for');
+  const ip = forwarded ? forwarded.split(',')[0].trim() : request.headers.get('x-real-ip') || 'unknown';
+  const now = Date.now();
+  const entry = _rateMap.get(ip);
+  if (!entry || now > entry.reset) {
+    _rateMap.set(ip, { count: 1, reset: now + RATE_LIMIT_WINDOW_MS });
+    return null;
+  }
+
+  entry.count += 1;
+  if (entry.count > RATE_LIMIT_MAX) {
+    const retryAfter = Math.ceil((entry.reset - now) / 1000);
+    return NextResponse.json(
+      { error: 'Too many requests. Please try again later.' },
+      {
+        status: 429,
+        headers: { 'Retry-After': String(retryAfter) },
       }
-    });
-  });
+    );
+  }
+
+  return null;
 }
 
 export async function POST(request: NextRequest) {
   try {
+    const rl = checkRateLimit(request);
+    if (rl) return rl;
     const formData = await request.formData();
     const file = formData.get('file') as File | null;
     const caption = formData.get('caption') as string | null;
