@@ -91,9 +91,16 @@ export default function DocumentDetailModal({
     [document]
   );
 
+  // Build absolute URL for Office viewers (they need public URLs)
+  const previewUrl = useMemo(() => {
+    if (!document) return '';
+    const relativeUrl = getPreviewUrl(document);
+    if (relativeUrl.startsWith('http')) return relativeUrl;
+    return `${window.location.origin}${relativeUrl}`;
+  }, [document]);
+
   if (!document) return null;
 
-  const previewUrl = getPreviewUrl(document);
   const canPreview = previewType !== 'none';
 
   const handleDownload = async () => {
@@ -205,7 +212,7 @@ export default function DocumentDetailModal({
 
             {previewType === 'office' && (
               <iframe
-                src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(previewUrl)}`}
+                src={`https://docs.google.com/gview?url=${encodeURIComponent(previewUrl)}&embedded=true`}
                 className="w-full border-0"
                 style={{ height: '70vh' }}
                 title="Office Preview"
