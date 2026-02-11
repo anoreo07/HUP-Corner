@@ -3,9 +3,16 @@ import { Major, Document, DocumentWithMajor, DocumentInsert } from '@/types/data
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 
 // Create client only if credentials are available
 export const supabase = createClient(supabaseUrl || 'https://placeholder.supabase.co', supabaseAnonKey || 'placeholder');
+
+// Create a separate client for server-side operations
+export const supabaseServer = createClient(
+  supabaseUrl || 'https://placeholder.supabase.co',
+  supabaseServiceRoleKey || 'placeholder'
+);
 
 // Helper functions
 export async function getMajors(): Promise<Major[]> {
@@ -63,47 +70,48 @@ export async function getAllDocumentsForAdmin(): Promise<DocumentWithMajor[]> {
   return (data || []) as DocumentWithMajor[];
 }
 
+// Update sensitive operations to use supabaseServer
 export async function uploadDocument(doc: DocumentInsert): Promise<Document> {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseServer
     .from('documents')
     .insert(doc as any)
     .select()
     .single();
-  
+
   if (error) throw error;
   return data as Document;
 }
 
 export async function approveDocument(id: string): Promise<Document> {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseServer
     .from('documents')
     .update({ status: 'APPROVED' } as any)
     .eq('id', id)
     .select()
     .single();
-  
+
   if (error) throw error;
   return data as Document;
 }
 
 export async function rejectDocument(id: string): Promise<Document> {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseServer
     .from('documents')
     .update({ status: 'REJECTED' } as any)
     .eq('id', id)
     .select()
     .single();
-  
+
   if (error) throw error;
   return data as Document;
 }
 
 export async function deleteDocument(id: string): Promise<boolean> {
-  const { error } = await supabase
+  const { error } = await supabaseServer
     .from('documents')
     .delete()
     .eq('id', id);
-  
+
   if (error) throw error;
   return true;
 }

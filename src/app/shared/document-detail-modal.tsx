@@ -163,8 +163,8 @@ export default function DocumentDetailModal({
       }}
       size={showPreview ? 'full' : 'xl'}
       overlayClassName="dark:bg-opacity-40 dark:bg-gray-50 dark:backdrop-blur-sm"
-      containerClassName="!items-start !pt-10"
-      className="z-[9999] !p-0 overflow-hidden"
+      containerClassName="!items-start !pt-10 overflow-hidden rounded-lg"
+      className="z-[9999] !p-0 overflow-hidden rounded-lg"
     >
       <div className="flex flex-col max-h-[90vh]">
         {/* Header */}
@@ -297,7 +297,7 @@ export default function DocumentDetailModal({
                     <Button
                       size="sm"
                       variant="outline"
-                      className="flex items-center gap-1.5 border-emerald-300 text-emerald-600 hover:bg-emerald-50"
+                      className="flex items-center gap-1.5 border-emerald-300 text-emerald-600 hover:bg-emerald-50 rounded-lg"
                       onClick={() => {
                         setPreviewLoading(true);
                         setShowPreview(!showPreview);
