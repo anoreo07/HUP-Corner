@@ -12,12 +12,6 @@ export default function Footer() {
         <div className="text-gray-400 text-xs">
           © 2026 HUP CORNER. Made with ❤️ for HUP students.
           <span className="mx-2">•</span>
-          <Link 
-            href="/admin/login" 
-            className="hover:text-gray-600 transition-colors"
-          >
-            Admin
-          </Link>
         </div>
       </div>
     </footer>
