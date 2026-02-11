@@ -73,4 +73,5 @@ export const authOptions: NextAuthOptions = {
       allowDangerousEmailAccountLinking: true,
     }),
   ],
+  secret: env.NEXTAUTH_SECRET || 'development-secret-key-change-in-production',
 };

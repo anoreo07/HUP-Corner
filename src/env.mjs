@@ -7,11 +7,8 @@ export const env = createEnv({
    */
   server: {
     NODE_ENV: z.enum(['development', 'test', 'production']),
-    NEXTAUTH_SECRET:
-      process.env.NODE_ENV === 'production'
-        ? z.string().min(1)
-        : z.string().min(1).optional(),
-    NEXTAUTH_URL: z.string().url(),
+    NEXTAUTH_SECRET: z.string().optional(),
+    NEXTAUTH_URL: z.string().optional(),
 
     // email
     SMTP_HOST: z.string().optional(),
@@ -22,6 +19,13 @@ export const env = createEnv({
 
     GOOGLE_CLIENT_ID: z.string().optional(),
     GOOGLE_CLIENT_SECRET: z.string().optional(),
+
+    // Telegram Bot
+    TELEGRAM_BOT_TOKEN: z.string().optional(),
+    TELEGRAM_CHANNEL_ID: z.string().optional(),
+
+    // Admin
+    ADMIN_PASSWORD: z.string().optional(),
   },
   /*
    * Environment variables available on the client (and server).
@@ -29,6 +33,8 @@ export const env = createEnv({
   client: {
     NEXT_PUBLIC_APP_NAME: z.string().optional(),
     NEXT_PUBLIC_GOOGLE_MAP_API_KEY: z.string().optional(),
+    NEXT_PUBLIC_SUPABASE_URL: z.string().optional(),
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().optional(),
   },
   runtimeEnv: process.env,
 });

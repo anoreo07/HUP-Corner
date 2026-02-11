@@ -35,7 +35,7 @@ export default function SearchTrigger({
           placeholderClassName
         )}
       >
-        Search your page...
+        Tìm kiếm tài liệu...
       </span>
       <span className="search-command ms-auto hidden items-center text-sm text-gray-600 lg:flex lg:rounded-md lg:bg-primary lg:px-1.5 lg:py-1 lg:text-xs lg:font-semibold lg:text-primary-foreground xl:justify-normal">
         <PiCommand strokeWidth={1.3} className="h-[15px] w-[15px]" />K

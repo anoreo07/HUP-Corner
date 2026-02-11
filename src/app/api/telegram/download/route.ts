@@ -1,0 +1,43 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { downloadFileFromTelegram, parseTelegramFilePath } from '@/lib/telegram';
+
+export const runtime = 'nodejs';
+export const maxDuration = 60;
+
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const fileId = searchParams.get('fileId');
+    const fileName = searchParams.get('fileName') || 'download';
+
+    if (!fileId) {
+      return NextResponse.json(
+        { error: 'fileId is required' },
+        { status: 400 }
+      );
+    }
+
+    // Parse file_id (may contain |message_id suffix)
+    const { fileId: actualFileId } = parseTelegramFilePath(fileId);
+
+    // Download file from Telegram
+    const { buffer } = await downloadFileFromTelegram(actualFileId);
+
+    // Return file as download
+    const headers = new Headers();
+    headers.set('Content-Disposition', `attachment; filename="${encodeURIComponent(fileName)}"`);
+    headers.set('Content-Type', 'application/octet-stream');
+    headers.set('Content-Length', buffer.length.toString());
+
+    return new NextResponse(buffer, {
+      status: 200,
+      headers,
+    });
+  } catch (error: any) {
+    console.error('Telegram download error:', error);
+    return NextResponse.json(
+      { error: error.message || 'Download failed' },
+      { status: 500 }
+    );
+  }
+}

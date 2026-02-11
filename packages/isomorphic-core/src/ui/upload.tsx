@@ -4,7 +4,7 @@ import { DropzoneRootProps, DropzoneInputProps } from 'react-dropzone';
 import UploadIcon from '../components/shape/upload';
 
 const inputClasses = {
-  base: 'p-5 md:ps-10 relative border rounded-xl cursor-pointer duration-75 ease-in-out focus:ring',
+  base: 'p-5 md:ps-10 relative border-2 rounded-xl cursor-pointer duration-75 ease-in-out focus:ring',
   flex: 'flex flex-col items-center gap-4',
   disabled: '!text-gray-500 !bg-gray-100 !border-muted hover:border-muted',
   darkTextColor: {
@@ -27,7 +27,7 @@ const inputClasses = {
   },
   variant: {
     active: {
-      base: 'border border-gray-300 bg-gray-0',
+      base: 'border-2 border-gray-300 bg-gray-0',
       color: {
         DEFAULT:
           'border-gray-900 text-gray-600 focus:border-gray-1000 focus:ring-gray-900/20',

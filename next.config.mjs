@@ -52,6 +52,11 @@ const nextConfig = {
   },
   reactStrictMode: true,
   transpilePackages: ['core'],
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '50mb',
+    },
+  },
 };
 
 export default nextConfig;

@@ -1,0 +1,362 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { Button, Badge, Title, ActionIcon, Empty } from 'rizzui';
+import {
+  PiCheckBold,
+  PiXBold,
+  PiTrashBold,
+  PiFilePdf,
+  PiFileDoc,
+  PiPresentation,
+  PiFileTextDuotone,
+  PiSignOutBold,
+  PiImage,
+  PiDownloadSimpleBold,
+} from 'react-icons/pi';
+import { toast } from 'react-hot-toast';
+import {
+  getAllDocumentsForAdmin,
+  approveDocument,
+  rejectDocument,
+  deleteDocument,
+  supabase,
+} from '@/lib/supabase';
+import { DocumentWithMajor, DocumentType, DocumentStatus } from '@/types/database';
+
+const documentTypeLabels: Record<DocumentType, string> = {
+  EXAM: 'Đề thi',
+  SLIDE: 'Slide bài giảng',
+  TEXTBOOK: 'Giáo trình',
+  OTHER: 'Khác',
+};
+
+const getFileIcon = (mimeType: string | null) => {
+  if (!mimeType) return <PiFileTextDuotone className="h-6 w-6" />;
+  
+  if (mimeType.includes('pdf')) return <PiFilePdf className="h-6 w-6 text-red-500" />;
+  if (mimeType.includes('presentation') || mimeType.includes('pptx')) 
+    return <PiPresentation className="h-6 w-6 text-orange-500" />;
+  if (mimeType.includes('word') || mimeType.includes('document')) 
+    return <PiFileDoc className="h-6 w-6 text-blue-500" />;
+  if (mimeType.includes('image')) 
+    return <PiImage className="h-6 w-6 text-green-500" />;
+  
+  return <PiFileTextDuotone className="h-6 w-6" />;
+};
+
+const getStatusBadge = (status: DocumentStatus) => {
+  switch (status) {
+    case 'PENDING':
+      return <Badge color="warning">Chờ duyệt</Badge>;
+    case 'APPROVED':
+      return <Badge color="success">Đã duyệt</Badge>;
+    case 'REJECTED':
+      return <Badge color="danger">Từ chối</Badge>;
+    default:
+      return null;
+  }
+};
+
+export default function AdminDashboardPage() {
+  const router = useRouter();
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [documents, setDocuments] = useState<DocumentWithMajor[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState<'all' | 'PENDING' | 'APPROVED' | 'REJECTED'>('PENDING');
+
+  const [approving, setApproving] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Check admin session
+    const adminStatus = localStorage.getItem('isAdmin');
+    if (adminStatus !== 'true') {
+      router.push('/admin/login');
+      return;
+    }
+    setIsAdmin(true);
+    loadDocuments();
+  }, [router]);
+
+  const loadDocuments = async () => {
+    try {
+      setLoading(true);
+      const data = await getAllDocumentsForAdmin();
+      setDocuments(data || []);
+    } catch (err) {
+      console.error('Error loading documents:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleApprove = async (id: string) => {
+    try {
+      setApproving(id);
+      const res = await fetch('/api/telegram/approve', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ documentId: id }),
+      });
+      const result = await res.json();
+      if (!res.ok) {
+        throw new Error(result.error || 'Duyệt thất bại');
+      }
+      toast.success('Đã duyệt và lưu vào Telegram!');
+      loadDocuments();
+    } catch (err: any) {
+      console.error('Error approving document:', err);
+      toast.error(err.message || 'Có lỗi khi duyệt tài liệu');
+    } finally {
+      setApproving(null);
+    }
+  };
+
+  const handleReject = async (id: string) => {
+    if (!confirm('Từ chối tài liệu này? File sẽ bị xoá khỏi Telegram.')) return;
+    try {
+      const res = await fetch('/api/telegram/reject', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ documentId: id }),
+      });
+      const result = await res.json();
+      if (!res.ok) {
+        throw new Error(result.error || 'Từ chối thất bại');
+      }
+      toast.success('Đã từ chối và xoá file!');
+      loadDocuments();
+    } catch (err: any) {
+      console.error('Error rejecting document:', err);
+      toast.error(err.message || 'Có lỗi khi từ chối tài liệu');
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Bạn có chắc muốn xóa tài liệu này? File sẽ bị xoá khỏi Telegram.')) return;
+    try {
+      const res = await fetch('/api/telegram/reject', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ documentId: id }),
+      });
+      const result = await res.json();
+      if (!res.ok) {
+        throw new Error(result.error || 'Xoá thất bại');
+      }
+      toast.success('Đã xoá tài liệu!');
+      loadDocuments();
+    } catch (err: any) {
+      console.error('Error deleting document:', err);
+      toast.error(err.message || 'Có lỗi khi xoá tài liệu');
+    }
+  };
+
+  const handleDownload = async (doc: DocumentWithMajor) => {
+    if (doc.storage_provider === 'telegram') {
+      // Download from Telegram via API
+      try {
+        const response = await fetch(
+          `/api/telegram/download?fileId=${encodeURIComponent(doc.file_path)}&fileName=${encodeURIComponent(doc.file_name || doc.title)}`
+        );
+        if (!response.ok) throw new Error('Download failed');
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = doc.file_name || doc.title;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        a.remove();
+      } catch (err) {
+        console.error('Download error:', err);
+        toast.error('Lỗi khi tải file');
+      }
+    } else {
+      const { data } = supabase.storage.from('documents').getPublicUrl(doc.file_path);
+      window.open(data.publicUrl, '_blank');
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('isAdmin');
+    localStorage.removeItem('adminLoginTime');
+    router.push('/admin/login');
+  };
+
+  const filteredDocuments = documents.filter((doc) => {
+    if (filter === 'all') return true;
+    return doc.status === filter;
+  });
+
+  if (!isAdmin) {
+    return null;
+  }
+
+  return (
+    <div className="flex flex-col gap-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <Title as="h1" className="text-2xl font-bold text-gray-900">
+            Quản lý tài liệu
+          </Title>
+          <p className="mt-1 text-gray-500">
+            Duyệt và quản lý các tài liệu được đăng tải
+          </p>
+        </div>
+        <Button
+          variant="outline"
+          className="flex items-center gap-2"
+          onClick={handleLogout}
+        >
+          <PiSignOutBold className="h-4 w-4" />
+          Đăng xuất
+        </Button>
+      </div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-4 gap-4">
+        <div
+          className={`cursor-pointer rounded-2xl border p-4 transition-colors ${
+            filter === 'all' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:bg-gray-50'
+          }`}
+          onClick={() => setFilter('all')}
+        >
+          <p className="text-2xl font-bold text-gray-900">{documents.length}</p>
+          <p className="text-sm text-gray-500">Tổng cộng</p>
+        </div>
+        <div
+          className={`cursor-pointer rounded-2xl border p-4 transition-colors ${
+            filter === 'PENDING' ? 'border-yellow-500 bg-yellow-50' : 'border-gray-200 hover:bg-gray-50'
+          }`}
+          onClick={() => setFilter('PENDING')}
+        >
+          <p className="text-2xl font-bold text-yellow-600">
+            {documents.filter((d) => d.status === 'PENDING').length}
+          </p>
+          <p className="text-sm text-gray-500">Chờ duyệt</p>
+        </div>
+        <div
+          className={`cursor-pointer rounded-2xl border p-4 transition-colors ${
+            filter === 'APPROVED' ? 'border-green-500 bg-green-50' : 'border-gray-200 hover:bg-gray-50'
+          }`}
+          onClick={() => setFilter('APPROVED')}
+        >
+          <p className="text-2xl font-bold text-green-600">
+            {documents.filter((d) => d.status === 'APPROVED').length}
+          </p>
+          <p className="text-sm text-gray-500">Đã duyệt</p>
+        </div>
+        <div
+          className={`cursor-pointer rounded-2xl border p-4 transition-colors ${
+            filter === 'REJECTED' ? 'border-red-500 bg-red-50' : 'border-gray-200 hover:bg-gray-50'
+          }`}
+          onClick={() => setFilter('REJECTED')}
+        >
+          <p className="text-2xl font-bold text-red-600">
+            {documents.filter((d) => d.status === 'REJECTED').length}
+          </p>
+          <p className="text-sm text-gray-500">Từ chối</p>
+        </div>
+      </div>
+
+      {/* Documents List */}
+      <div className="rounded-2xl border border-gray-200 bg-white">
+        {loading ? (
+          <div className="p-8 text-center text-gray-500">Đang tải...</div>
+        ) : filteredDocuments.length === 0 ? (
+          <div className="p-8 text-center">
+            <Empty
+              text={
+                filter === 'PENDING'
+                  ? 'Không có tài liệu nào chờ duyệt'
+                  : 'Không có tài liệu nào'
+              }
+              textClassName="text-gray-500"
+            />
+          </div>
+        ) : (
+          <div className="divide-y divide-gray-100">
+            {filteredDocuments.map((doc) => (
+              <div
+                key={doc.id}
+                className="flex items-center justify-between p-4 hover:bg-gray-50"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gray-100">
+                    {getFileIcon(doc.mime_type)}
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-gray-900">{doc.title}</h3>
+                    <div className="mt-1 flex items-center gap-2 text-sm text-gray-500">
+                      <span>{doc.majors?.name || 'Chưa phân loại'}</span>
+                      <span>•</span>
+                      <span>{documentTypeLabels[doc.document_type]}</span>
+                      <span>•</span>
+                      <span>{new Date(doc.created_at).toLocaleDateString('vi-VN')}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  {getStatusBadge(doc.status)}
+                  
+                  <ActionIcon
+                    variant="outline"
+                    size="sm"
+                    className="border-blue-500 text-blue-500 hover:bg-blue-50"
+                    onClick={() => handleDownload(doc)}
+                    title="Xem file"
+                  >
+                    <PiDownloadSimpleBold className="h-4 w-4" />
+                  </ActionIcon>
+                  
+                  {doc.status === 'PENDING' && (
+                    <>
+                      <ActionIcon
+                        variant="outline"
+                        size="sm"
+                        className="border-green-500 text-green-500 hover:bg-green-50"
+                        onClick={() => handleApprove(doc.id)}
+                        title="Duyệt"
+                        disabled={approving === doc.id}
+                      >
+                        {approving === doc.id ? (
+                          <span className="h-4 w-4 animate-spin rounded-full border-2 border-green-500 border-t-transparent" />
+                        ) : (
+                          <PiCheckBold className="h-4 w-4" />
+                        )}
+                      </ActionIcon>
+                      <ActionIcon
+                        variant="outline"
+                        size="sm"
+                        className="border-red-500 text-red-500 hover:bg-red-50"
+                        onClick={() => handleReject(doc.id)}
+                        title="Từ chối"
+                      >
+                        <PiXBold className="h-4 w-4" />
+                      </ActionIcon>
+                    </>
+                  )}
+                  
+                  <ActionIcon
+                    variant="outline"
+                    size="sm"
+                    className="border-gray-300 text-gray-500 hover:bg-gray-50"
+                    onClick={() => handleDelete(doc.id)}
+                    title="Xóa"
+                  >
+                    <PiTrashBold className="h-4 w-4" />
+                  </ActionIcon>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

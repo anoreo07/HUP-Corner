@@ -7,6 +7,7 @@ import {
   PiNotePencilDuotone,
   PiSquaresFourDuotone,
   PiAtomDuotone,
+  PiChatTextDuotone,
 } from 'react-icons/pi';
 
 // Note: do not add href in the label object, it is rendered as a label
@@ -56,5 +57,13 @@ export const menuItems = [
     name: 'Viết Đánh Giá',
     href: '/viet-danh-gia',
     icon: <PiNotePencilDuotone className="text-amber-500" />,
+  },
+  {
+    name: 'GÓP Ý',
+  },
+  {
+    name: 'Viết Góp Ý',
+    href: '/gop-y',
+    icon: <PiChatTextDuotone className="text-teal-500" />,
   },
 ];

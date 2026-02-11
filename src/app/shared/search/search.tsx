@@ -47,7 +47,7 @@ export default function SearchWidget({
         isOpen={open}
         onClose={() => setOpen(false)}
         overlayClassName="dark:bg-opacity-20 dark:bg-gray-50 dark:backdrop-blur-sm"
-        containerClassName="dark:bg-gray-100/90 overflow-hidden dark:backdrop-blur-xl"
+        containerClassName="dark:bg-gray-100/90 overflow-hidden dark:backdrop-blur-xl !items-start !pt-4"
         className="z-[9999]"
       >
         <SearchList onClose={() => setOpen(false)} />
