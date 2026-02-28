@@ -29,7 +29,7 @@ export const metaObject = (
     description,
     keywords: siteConfig.keywords,
     openGraph: openGraph ?? {
-      title: title ? `${title} - ${siteConfig.title}` : title,
+      title: title ? `${title} - ${siteConfig.title}` : siteConfig.title,
       description,
       url: siteConfig.siteUrl,
       siteName: siteConfig.title, // https://developers.google.com/search/docs/appearance/site-names
