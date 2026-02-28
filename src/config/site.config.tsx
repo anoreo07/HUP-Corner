@@ -11,8 +11,8 @@ export const siteConfig = {
   title: 'HUP Corner - Chia sẻ tài liệu HUP',
   description: `HUP Corner là góc nhỏ dành cho sinh viên HUP – nơi tổng hợp tài liệu, tips học tập, và chia sẻ kinh nghiệm từ chính sinh viên. Học chung, chia sẻ chung, cùng nhau tiến bộ!`,
   // update this to your real production URL when available
-  siteUrl: 'https://hupcorner.example',
-  keywords: ['HUP', 'tài liệu HUP', 'sinh viên HUP'],
+  siteUrl: 'https://hupcorner.vercel.app',
+  keywords: ['HUP', 'tài liệu HUP', 'sinh viên HUP', 'HUP Corner', 'học tập HUP', 'đề cương HUP', 'slide bài giảng HUP', 'bài tập HUP', 'đề thi HUP'],
   logo: '/logo-512.png',
   icon: '/logo-512.png',
   mode: MODE.LIGHT,
