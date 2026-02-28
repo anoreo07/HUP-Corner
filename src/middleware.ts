@@ -1,7 +1,10 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { getToken } from 'next-auth/jwt';
 
-const NEXTAUTH_SECRET = process.env.NEXTAUTH_SECRET || '';
+// Use the same fallback secret as next-auth to avoid mismatches when
+// NEXTAUTH_SECRET is not set in environment (development fallback).
+const NEXTAUTH_SECRET =
+  process.env.NEXTAUTH_SECRET || 'development-secret-key-change-in-production';
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
