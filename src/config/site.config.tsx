@@ -1,6 +1,8 @@
 import { Metadata } from 'next';
 import { LAYOUT_OPTIONS } from '@/config/enums';
 import { OpenGraph } from 'next/dist/lib/metadata/types/opengraph-types';
+// Use the local opengraph image located in src/app
+import ogImage from '@/app/opengraph-image.png';
 
 enum MODE {
   DARK = 'dark',
@@ -33,11 +35,16 @@ export const metaObject = (
       description,
       url: siteConfig.siteUrl,
       siteName: siteConfig.title, // https://developers.google.com/search/docs/appearance/site-names
-      images: {
-        url: 'https://s3.amazonaws.com/redqteam.com/isomorphic-furyroad/itemdep/isobanner.png',
-        width: 1200,
-        height: 630,
-      },
+      // Resolve the imported static image to an OG image descriptor expected
+      // by Next's Metadata types (requires `url` property).
+      images:
+        typeof ogImage === 'string'
+          ? ogImage
+          : {
+              url: (ogImage as any).src || '',
+              width: (ogImage as any).width,
+              height: (ogImage as any).height,
+            },
       locale: 'en_US',
       type: 'website',
     },
