@@ -8,8 +8,11 @@ enum MODE {
 }
 
 export const siteConfig = {
-  title: 'HUP CORNER',
-  description: `HUP CORNER là "góc nhỏ" dành cho sinh viên HUP – nơi tổng hợp tài liệu, tips học tập, và chia sẻ kinh nghiệm từ chính sinh viên. Học chung, chia sẻ chung, cùng nhau tiến bộ!.`,
+  title: 'HUP Corner - Chia sẻ tài liệu HUP',
+  description: `HUP Corner là góc nhỏ dành cho sinh viên HUP – nơi tổng hợp tài liệu, tips học tập, và chia sẻ kinh nghiệm từ chính sinh viên. Học chung, chia sẻ chung, cùng nhau tiến bộ!`,
+  // update this to your real production URL when available
+  siteUrl: 'https://hupcorner.example',
+  keywords: ['HUP', 'tài liệu HUP', 'sinh viên HUP'],
   logo: '/logo-512.png',
   icon: '/logo-512.png',
   mode: MODE.LIGHT,
@@ -24,10 +27,11 @@ export const metaObject = (
   return {
     title: title ? `${title} - ${siteConfig.title}` : siteConfig.title,
     description,
+    keywords: siteConfig.keywords,
     openGraph: openGraph ?? {
       title: title ? `${title} - ${siteConfig.title}` : title,
       description,
-      url: 'https://isomorphic-furyroad.vercel.app',
+      url: siteConfig.siteUrl,
       siteName: siteConfig.title, // https://developers.google.com/search/docs/appearance/site-names
       images: {
         url: 'https://s3.amazonaws.com/redqteam.com/isomorphic-furyroad/itemdep/isobanner.png',

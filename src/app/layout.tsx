@@ -18,6 +18,7 @@ import '@/app/globals.css';
 export const metadata = {
   title: siteConfig.title,
   description: siteConfig.description,
+  keywords: siteConfig.keywords,
 };
 
 export default async function RootLayout({
