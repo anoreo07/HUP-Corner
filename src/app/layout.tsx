@@ -5,7 +5,7 @@ import AuthProvider from '@/app/api/auth/[...nextauth]/auth-provider';
 import GlobalDrawer from '@/app/shared/drawer-views/container';
 import GlobalModal from '@/app/shared/modal-views/container';
 import { JotaiProvider, ThemeProvider } from '@/app/shared/theme-provider';
-import { siteConfig } from '@/config/site.config';
+import { siteConfig, metaObject } from '@/config/site.config';
 import { inter, lexendDeca } from '@/app/fonts';
 import cn from '@core/utils/class-names';
 import NextProgress from '@core/components/next-progress';
@@ -15,11 +15,7 @@ import 'swiper/css';
 import 'swiper/css/navigation';
 import '@/app/globals.css';
 
-export const metadata = {
-  title: siteConfig.title,
-  description: siteConfig.description,
-  keywords: siteConfig.keywords,
-};
+export const metadata = metaObject();
 
 export default async function RootLayout({
   children,
