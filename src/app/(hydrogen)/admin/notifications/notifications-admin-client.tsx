@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { PiPlusBold, PiTrashBold } from 'react-icons/pi';
+import { PiPlusBold, PiTrashBold, PiStarBold } from 'react-icons/pi';
 import { Notification } from '@/types/database';
 
 export default function NotificationsAdminClient({ initial }: { initial: Notification[] }) {
@@ -9,6 +9,7 @@ export default function NotificationsAdminClient({ initial }: { initial: Notific
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [published, setPublished] = useState(true);
+  const [isFeatured, setIsFeatured] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const create = async () => {
@@ -17,7 +18,7 @@ export default function NotificationsAdminClient({ initial }: { initial: Notific
     const res = await fetch('/api/admin/notifications', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title, description, published }),
+      body: JSON.stringify({ title, description, published, is_featured: isFeatured }),
     });
     setLoading(false);
     if (!res.ok) {
@@ -29,6 +30,7 @@ export default function NotificationsAdminClient({ initial }: { initial: Notific
     setTitle('');
     setDescription('');
     setPublished(true);
+    setIsFeatured(false);
   };
 
   const remove = async (id: string) => {
@@ -49,6 +51,17 @@ export default function NotificationsAdminClient({ initial }: { initial: Notific
     setNotifications((s) => s.map((n) => (n.id === id ? updated : n)));
   };
 
+  const toggleFeatured = async (id: string, current: boolean) => {
+    const res = await fetch(`/api/admin/notifications/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ is_featured: !current }),
+    });
+    if (!res.ok) return alert('Failed to update');
+    const updated = await res.json();
+    setNotifications((s) => s.map((n) => (n.id === id ? updated : n)));
+  };
+
   return (
     <div className="space-y-4">
       <div className="rounded-2xl bg-white p-4 border border-[#E5E7EB]">
@@ -57,6 +70,7 @@ export default function NotificationsAdminClient({ initial }: { initial: Notific
         <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Mô tả" className="w-full mb-2 p-2 border rounded" />
         <div className="flex items-center gap-3 mb-2">
           <label className="flex items-center gap-2"><input type="checkbox" checked={published} onChange={(e) => setPublished(e.target.checked)} /> Công khai</label>
+          <label className="flex items-center gap-2"><input type="checkbox" checked={isFeatured} onChange={(e) => setIsFeatured(e.target.checked)} /> ⭐ Featured (Hiện trên home)</label>
           <button onClick={create} disabled={loading} className="ml-auto bg-[#2563EB] hover:bg-[#1D4ED8] text-white px-4 py-2 rounded inline-flex items-center gap-2">
             <PiPlusBold /> Tạo
           </button>
@@ -74,7 +88,10 @@ export default function NotificationsAdminClient({ initial }: { initial: Notific
                 <div className="text-xs text-[#6B7280]">{new Date(n.created_at).toLocaleString()}</div>
               </div>
               <div className="flex flex-col items-end gap-2">
-                <button onClick={() => togglePublish(n.id, (n as any).published)} className="text-sm px-2 py-1 bg-gray-100 rounded">{(n as any).published ? 'Đang hiển thị' : 'Ẩn'}</button>
+                <button onClick={() => toggleFeatured(n.id, (n as any).is_featured)} className={`text-sm px-2 py-1 rounded ${(n as any).is_featured ? 'bg-yellow-100 text-yellow-700 font-semibold' : 'bg-gray-100'}`}>
+                  {(n as any).is_featured ? '⭐ Featured' : 'Thường'}
+                </button>
+                <button onClick={() => togglePublish(n.id, (n as any).published)} className="text-sm px-2 py-1 bg-gray-100 rounded">{(n as any).published ? 'Công khai' : 'Ẩn'}</button>
                 <button onClick={() => remove(n.id)} className="text-red-600"> <PiTrashBold /> </button>
               </div>
             </div>

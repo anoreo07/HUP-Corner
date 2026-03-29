@@ -13,14 +13,14 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { title, description, published = true, start_at, end_at } = body || {};
+    const { title, description, published = true, is_featured = false, start_at, end_at } = body || {};
 
     if (!title) {
       return NextResponse.json({ error: 'Missing title' }, { status: 400 });
     }
 
     const supabaseAdmin = getSupabaseAdmin();
-    const insertObj: any = { title, description: description || null, published, created_at: new Date().toISOString() };
+    const insertObj: any = { title, description: description || null, published, is_featured, created_at: new Date().toISOString() };
     if (start_at) insertObj.start_at = start_at;
     if (end_at) insertObj.end_at = end_at;
 

@@ -49,6 +49,7 @@ export interface Notification {
   title: string;
   description: string | null;
   published: boolean;
+  is_featured: boolean; // Show on home page
   created_at: string;
 }
 

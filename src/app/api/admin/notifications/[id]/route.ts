@@ -30,12 +30,13 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
     const id = params.id;
     const body = await req.json();
-    const { title, description, published, start_at, end_at } = body || {};
+    const { title, description, published, is_featured, start_at, end_at } = body || {};
 
     const updateObj: any = {};
     if (title !== undefined) updateObj.title = title;
     if (description !== undefined) updateObj.description = description;
     if (published !== undefined) updateObj.published = published;
+    if (is_featured !== undefined) updateObj.is_featured = is_featured;
     if (start_at !== undefined) updateObj.start_at = start_at;
     if (end_at !== undefined) updateObj.end_at = end_at;
 
