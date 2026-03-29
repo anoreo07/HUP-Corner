@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
 import Link from 'next/link';
 import { Button } from 'rizzui';
+import { PiArrowUpRightBold } from 'react-icons/pi';
 import { toast } from 'react-hot-toast';
 
 export default function AdminPortalPage() {
@@ -48,122 +49,116 @@ export default function AdminPortalPage() {
 
   const adminName = (session.user as any)?.name || 'Admin';
 
+  const quickLinks = [
+    {
+      title: 'Dashboard duyệt',
+      description: 'Xem, chỉnh sửa và duyệt các tài liệu người dùng đã tải lên.',
+      href: '/admin/dashboard',
+      accent: 'text-blue-600 bg-blue-50',
+      label: 'Quy trình tài liệu'
+    },
+    {
+      title: 'Thông báo hệ thống',
+      description: 'Tạo thông báo nổi bật hiển thị với toàn bộ người dùng.',
+      href: '/admin/notifications',
+      accent: 'text-amber-600 bg-amber-50',
+      label: 'Truyền thông'
+    }
+  ];
+
   return (
-    <div className="flex flex-col gap-8">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-red-600 to-red-700 text-white rounded-2xl p-8 shadow-lg">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold mb-2">👨‍💼 Bảng Điều Khiển Admin</h1>
-            <p className="text-red-100">Xin chào, {adminName}! 👋</p>
+    <div className="min-h-screen bg-neutral-50 py-10">
+      <div className="mx-auto flex w-full max-w-5xl flex-col gap-10 px-4">
+        {/* Header */}
+        <div className="rounded-3xl border border-neutral-200 bg-white/90 p-8 shadow-sm backdrop-blur">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div>
+              <p className="text-sm uppercase tracking-[0.2em] text-neutral-500">Admin portal</p>
+              <h1 className="text-3xl font-semibold text-neutral-900">Xin chào, {adminName}</h1>
+              <p className="mt-2 text-base text-neutral-600">
+                Quản trị tài liệu và nội dung hệ thống. Hãy chọn khu vực bạn muốn làm việc.
+              </p>
+            </div>
+            <div className="inline-flex items-center rounded-full border border-neutral-200 px-4 py-2 text-sm text-neutral-500">
+              Trạng thái: <span className="ml-2 font-medium text-green-600">Hoạt động</span>
+            </div>
           </div>
-          <div className="text-5xl">⚙️</div>
-        </div>
-      </div>
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white border-2 border-blue-200 rounded-xl p-6 hover:shadow-lg transition">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold text-gray-900">Tài liệu chờ duyệt</h3>
-            <div className="text-3xl">📋</div>
-          </div>
-          <p className="text-sm text-gray-600">Kiểm tra và duyệt tài liệu</p>
         </div>
 
-        <div className="bg-white border-2 border-amber-200 rounded-xl p-6 hover:shadow-lg transition">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold text-gray-900">Thông báo</h3>
-            <div className="text-3xl">📢</div>
-          </div>
-          <p className="text-sm text-gray-600">Quản lý thông báo admin</p>
-        </div>
-
-        <div className="bg-white border-2 border-green-200 rounded-xl p-6 hover:shadow-lg transition">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold text-gray-900">Hệ thống</h3>
-            <div className="text-3xl">🛠️</div>
-          </div>
-          <p className="text-sm text-gray-600">Thông tin hệ thống</p>
-        </div>
-      </div>
-
-      {/* Main Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Dashboard */}
-        <Link href="/admin/dashboard" className="group">
-          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border-3 border-blue-300 rounded-2xl p-8 hover:shadow-xl hover:scale-105 transition-all duration-300 h-full">
-            <div className="flex items-start justify-between mb-4">
-              <div>
-                <h2 className="text-2xl font-bold text-blue-900 mb-2">📊 Dashboard Duyệt</h2>
-                <p className="text-blue-700 leading-relaxed">
-                  Quản lý và duyệt tài liệu. Xem thông tin chi tiết, chỉnh sửa metadata, duyệt hoặc từ chối tài liệu từ người dùng.
-                </p>
+        {/* Stats */}
+        <div className="grid gap-4 md:grid-cols-3">
+          {[
+            { label: 'Tài liệu chờ duyệt', helper: 'Theo dõi và duyệt nhanh', tone: 'text-blue-600 bg-blue-50' },
+            { label: 'Thông báo hệ thống', helper: 'Quản lý thông tin nổi bật', tone: 'text-amber-600 bg-amber-50' },
+            { label: 'Hoạt động gần đây', helper: 'Kiểm tra lịch sử thao tác', tone: 'text-emerald-600 bg-emerald-50' }
+          ].map((item) => (
+            <div key={item.label} className="rounded-2xl border border-neutral-200 bg-white/80 p-6 shadow-sm">
+              <div className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${item.tone}`}>
+                {item.label}
               </div>
-              <div className="text-5xl group-hover:scale-110 transition transform">📈</div>
+              <p className="mt-4 text-sm text-neutral-600">{item.helper}</p>
             </div>
-            <div className="w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition cursor-pointer">
-              ✓ Vào Dashboard
-            </div>
-          </div>
-        </Link>
+          ))}
+        </div>
 
-        {/* Notifications */}
-        <Link href="/admin/notifications" className="group">
-          <div className="bg-gradient-to-br from-amber-50 to-orange-50 border-3 border-amber-300 rounded-2xl p-8 hover:shadow-xl hover:scale-105 transition-all duration-300 h-full">
-            <div className="flex items-start justify-between mb-4">
-              <div>
-                <h2 className="text-2xl font-bold text-amber-900 mb-2">📢 Quản Lý Thông Báo</h2>
-                <p className="text-amber-700 leading-relaxed">
-                  Tạo và quản lý thông báo admin. Những thông báo sẽ hiển thị ở đầu trang chủ để thông báo cho tất cả người dùng.
-                </p>
+        {/* Quick links */}
+        <div className="grid gap-6 md:grid-cols-2">
+          {quickLinks.map((link) => (
+            <Link key={link.href} href={link.href} className="group">
+              <div className="h-full rounded-3xl border border-neutral-200 bg-white/90 p-8 shadow-sm transition duration-200 group-hover:-translate-y-0.5 group-hover:shadow-md">
+                <div className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${link.accent}`}>
+                  {link.label}
+                </div>
+                <div className="mt-5 flex items-start justify-between">
+                  <div>
+                    <h2 className="text-2xl font-semibold text-neutral-900">{link.title}</h2>
+                    <p className="mt-3 text-sm leading-relaxed text-neutral-600">{link.description}</p>
+                  </div>
+                  <div className="ml-6 rounded-full border border-neutral-200 p-3 text-neutral-400 transition group-hover:text-neutral-800">
+                    <PiArrowUpRightBold className="h-5 w-5" />
+                  </div>
+                </div>
               </div>
-              <div className="text-5xl group-hover:scale-110 transition transform">🔔</div>
+            </Link>
+          ))}
+        </div>
+
+        {/* Process */}
+        <div className="rounded-3xl border border-neutral-200 bg-white/80 p-8 shadow-sm">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs uppercase tracking-[0.3em] text-neutral-500">Quy trình</p>
+              <h3 className="mt-2 text-xl font-semibold text-neutral-900">Duyệt tài liệu từng bước</h3>
             </div>
-            <div className="w-full mt-6 bg-amber-600 hover:bg-amber-700 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition cursor-pointer">
-              📢 Quản Lý Thông Báo
-            </div>
+            <div className="text-xs text-neutral-500">Cập nhật gần nhất · hôm nay</div>
           </div>
-        </Link>
-      </div>
+          <div className="mt-6 space-y-5">
+            {[
+              'Người dùng tải lên tài liệu với trạng thái "Chờ duyệt".',
+              'Admin mở dashboard để xem danh sách tài liệu.',
+              'Xem chi tiết, cập nhật metadata nếu cần.',
+              'Duyệt để xuất bản hoặc từ chối với lý do rõ ràng.',
+              'Có thể xóa tài liệu khỏi hệ thống nếu không phù hợp.'
+            ].map((step, idx) => (
+              <div key={step} className="flex gap-4">
+                <span className="mt-1 flex h-8 w-8 flex-none items-center justify-center rounded-full border border-neutral-200 text-sm font-semibold text-neutral-600">
+                  {idx + 1}
+                </span>
+                <p className="text-sm text-neutral-700">{step}</p>
+              </div>
+            ))}
+          </div>
+        </div>
 
-      {/* Quick Info */}
-      <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-6">
-        <h3 className="font-bold text-blue-900 mb-3 flex items-center gap-2">
-          📋 Quy Trình Duyệt Tài Liệu
-        </h3>
-        <ul className="space-y-2 text-sm text-blue-800">
-          <li className="flex gap-2">
-            <span className="font-bold">1.</span>
-            <span>Người dùng tải lên tài liệu → tài liệu có trạng thái &quot;Chờ duyệt&quot;</span>
-          </li>
-          <li className="flex gap-2">
-            <span className="font-bold">2.</span>
-            <span>Admin vào Dashboard → xem danh sách tài liệu chờ duyệt</span>
-          </li>
-          <li className="flex gap-2">
-            <span className="font-bold">3.</span>
-            <span>Admin xem trước, chỉnh sửa nếu cần (tiêu đề, tên môn học, năm học)</span>
-          </li>
-          <li className="flex gap-2">
-            <span className="font-bold">4.</span>
-            <span>Admin nhấn &quot;Duyệt&quot; → tài liệu được lưu vào Telegram và hiển thị công khai</span>
-          </li>
-          <li className="flex gap-2">
-            <span className="font-bold">5.</span>
-            <span>Admin có thể xóa tài liệu từ cả hệ thống lẫn Telegram</span>
-          </li>
-        </ul>
-      </div>
-
-      {/* Logout Button */}
-      <div className="flex justify-end pt-4">
-        <Button
-          onClick={handleLogout}
-          className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg"
-        >
-          Đăng xuất
-        </Button>
+        {/* Logout */}
+        <div className="flex justify-end">
+          <Button
+            onClick={handleLogout}
+            className="rounded-full border border-neutral-200 bg-white px-6 py-2 text-sm font-medium text-neutral-700 shadow-sm transition hover:bg-neutral-900 hover:text-white"
+          >
+            Đăng xuất
+          </Button>
+        </div>
       </div>
     </div>
   );

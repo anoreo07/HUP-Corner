@@ -3,8 +3,16 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
-import { Button, Badge, Title, Empty } from 'rizzui';
+import { Button, Badge, Title, Empty, ActionIcon } from 'rizzui';
 import { toast } from 'react-hot-toast';
+import {
+  PiEyeBold,
+  PiDownloadSimpleBold,
+  PiPencilBold,
+  PiCheckBold,
+  PiXBold,
+  PiTrashBold,
+} from 'react-icons/pi';
 import { EditDocumentModal } from '@/app/(hydrogen)/admin/edit-document-modal';
 import { DocumentPreviewModal } from '@/app/(hydrogen)/admin/document-preview-modal';
 import {
@@ -465,61 +473,74 @@ export default function AdminDashboardPage() {
 
                 <div className="flex items-center gap-3">
                   {getStatusBadge(doc.status)}
-                  
-                  <Button
+
+                  <ActionIcon
                     variant="outline"
                     size="sm"
+                    className="border-cyan-500 text-cyan-500 hover:bg-cyan-50"
                     onClick={() => handlePreview(doc)}
+                    title="Xem trước"
                   >
-                    Xem
-                  </Button>
-                  
-                  <Button
+                    <PiEyeBold className="h-4 w-4" />
+                  </ActionIcon>
+
+                  <ActionIcon
                     variant="outline"
                     size="sm"
+                    className="border-blue-500 text-blue-500 hover:bg-blue-50"
                     onClick={() => handleDownload(doc)}
+                    title="Tải file"
                   >
-                    Tải
-                  </Button>
-                  
-                  <Button
+                    <PiDownloadSimpleBold className="h-4 w-4" />
+                  </ActionIcon>
+
+                  <ActionIcon
                     variant="outline"
                     size="sm"
+                    className="border-purple-500 text-purple-500 hover:bg-purple-50"
                     onClick={() => handleEdit(doc)}
+                    title="Chỉnh sửa"
                   >
-                    Sửa
-                  </Button>
-                  
+                    <PiPencilBold className="h-4 w-4" />
+                  </ActionIcon>
+
                   {doc.status === 'PENDING' && (
                     <>
-                      <Button
+                      <ActionIcon
                         variant="outline"
                         size="sm"
                         className="border-green-500 text-green-500 hover:bg-green-50"
                         onClick={() => handleApprove(doc.id)}
+                        title="Duyệt tài liệu"
                         disabled={approving === doc.id}
                       >
-                        {approving === doc.id ? 'Đang...' : 'Duyệt'}
-                      </Button>
-                      <Button
+                        {approving === doc.id ? (
+                          <span className="h-4 w-4 animate-spin rounded-full border-2 border-green-500 border-t-transparent" />
+                        ) : (
+                          <PiCheckBold className="h-4 w-4" />
+                        )}
+                      </ActionIcon>
+                      <ActionIcon
                         variant="outline"
                         size="sm"
                         className="border-red-500 text-red-500 hover:bg-red-50"
                         onClick={() => handleReject(doc.id)}
+                        title="Từ chối tài liệu"
                       >
-                        Từ chối
-                      </Button>
+                        <PiXBold className="h-4 w-4" />
+                      </ActionIcon>
                     </>
                   )}
-                  
-                  <Button
+
+                  <ActionIcon
                     variant="outline"
                     size="sm"
-                    className="border-gray-300 text-gray-500 hover:bg-red-50"
+                    className="border-gray-300 text-gray-500 hover:bg-gray-50"
                     onClick={() => handleDelete(doc.id)}
+                    title="Xóa tài liệu"
                   >
-                    Xóa
-                  </Button>
+                    <PiTrashBold className="h-4 w-4" />
+                  </ActionIcon>
                 </div>
               </div>
             ))}
