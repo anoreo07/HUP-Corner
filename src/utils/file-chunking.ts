@@ -14,7 +14,7 @@ export interface FileChunk {
   totalChunks: number;
 }
 
-const CHUNK_SIZE = 18 * 1024 * 1024; // 18MB per chunk (Telegram limit 20MB)
+const CHUNK_SIZE = 4 * 1024 * 1024; // 4MB per chunk (Vercel Hobby limit)
 const TELEGRAM_LIMIT = 20 * 1024 * 1024; // 20MB
 
 /**
