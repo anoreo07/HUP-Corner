@@ -32,7 +32,13 @@ export default function UploadForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [isMounted, setIsMounted] = useState(false);
   const { uploads, uploadFile } = useFileUploader();
+
+  // Hydration fix: Mark component as mounted after first render
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   useEffect(() => {
     loadMajors();
@@ -170,6 +176,25 @@ export default function UploadForm() {
           >
             Đăng tài liệu khác
           </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Prevent rendering before hydration is complete to avoid hydration mismatch
+  if (!isMounted) {
+    return (
+      <div className="rounded-2xl bg-white p-8 shadow-sm border border-gray-100 min-h-96">
+        <div className="animate-pulse">
+          <div className="h-8 bg-gray-200 rounded w-40 mb-4"></div>
+          <div className="h-6 bg-gray-100 rounded w-80 mb-8"></div>
+          <div className="space-y-4">
+            <div className="h-10 bg-gray-100 rounded"></div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="h-10 bg-gray-100 rounded"></div>
+              <div className="h-10 bg-gray-100 rounded"></div>
+            </div>
+          </div>
         </div>
       </div>
     );

@@ -41,25 +41,25 @@ const DEFAULT_OPTIONS: UseFileUploaderOptions = {
   ],
 };
 
+// Map file extensions to their MIME types (fallback for browser detection issues)
+const EXTENSION_TO_MIME_TYPE: Record<string, string> = {
+  '.pdf': 'application/pdf',
+  '.doc': 'application/msword',
+  '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  '.xls': 'application/vnd.ms-excel',
+  '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  '.ppt': 'application/vnd.ms-powerpoint',
+  '.pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.png': 'image/png',
+  '.mp4': 'video/mp4',
+  '.mp3': 'audio/mpeg',
+};
+
 export function useFileUploader(options: UseFileUploaderOptions = {}) {
   const [uploads, setUploads] = useState<FileUploadState[]>([]);
   const opts = useMemo(() => ({ ...DEFAULT_OPTIONS, ...options }), [options]);
-
-  // Map file extensions to their MIME types (fallback for browser detection issues)
-  const extensionToMimeType: Record<string, string> = {
-    '.pdf': 'application/pdf',
-    '.doc': 'application/msword',
-    '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    '.xls': 'application/vnd.ms-excel',
-    '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    '.ppt': 'application/vnd.ms-powerpoint',
-    '.pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-    '.jpg': 'image/jpeg',
-    '.jpeg': 'image/jpeg',
-    '.png': 'image/png',
-    '.mp4': 'video/mp4',
-    '.mp3': 'audio/mpeg',
-  };
 
   const validateFile = useCallback(
     (file: File): { valid: boolean; message?: string } => {
@@ -72,7 +72,7 @@ export function useFileUploader(options: UseFileUploaderOptions = {}) {
 
       // Get file extension
       const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase();
-      const detectedMimeType = extensionToMimeType[fileExtension];
+      const detectedMimeType = EXTENSION_TO_MIME_TYPE[fileExtension];
 
       // Check MIME type by browser detection OR by file extension
       const isMimeTypeValid = opts.allowedTypes!.includes(file.type) || 
@@ -104,6 +104,20 @@ export function useFileUploader(options: UseFileUploaderOptions = {}) {
         return null;
       }
 
+      // Ensure chatId is provided
+      const channelId = chatId || (typeof window !== 'undefined' ? process.env.NEXT_PUBLIC_TELEGRAM_CHANNEL_ID : '');
+      if (!channelId || channelId.trim() === '') {
+        const errorMessage = 'Telegram Channel ID is not configured. Please check your environment variables.';
+        const uploadState: FileUploadState = {
+          fileName: file.name,
+          progress: 0,
+          status: 'error',
+          message: errorMessage,
+        };
+        setUploads((prev) => [...prev, uploadState]);
+        return null;
+      }
+
       const uploadIndex = uploads.length;
       
       // Check if file needs chunking
@@ -121,11 +135,8 @@ export function useFileUploader(options: UseFileUploaderOptions = {}) {
       ]);
 
       try {
-        // Get chat_id from environment
-        const chatId = process.env.NEXT_PUBLIC_TELEGRAM_CHANNEL_ID || '';
-        
         // Upload with automatic chunking
-        const fileIds = await uploadFileWithChunking(file, chatId, (progress, message) => {
+        const fileIds = await uploadFileWithChunking(file, channelId, (progress, message) => {
           setUploads((prev) => {
             const updated = [...prev];
             updated[uploadIndex] = {

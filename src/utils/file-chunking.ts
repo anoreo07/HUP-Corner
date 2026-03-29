@@ -85,6 +85,12 @@ export async function uploadChunkToTelegram(
   onProgress?: (progress: number) => void
 ): Promise<{ file_id: string; message_id: number; file_name: string; file_size: number; chunk_info: string }> {
   return new Promise((resolve, reject) => {
+    // Validate chatId before proceeding
+    if (!chatId || chatId.trim() === '') {
+      reject(new Error('Telegram Channel ID is not configured. Please check your environment variables.'));
+      return;
+    }
+
     const xhr = new XMLHttpRequest();
 
     // Track upload progress
@@ -118,11 +124,22 @@ export async function uploadChunkToTelegram(
       } else if (xhr.status === 429) {
         // Rate limit exceeded
         const retryAfter = xhr.getResponseHeader('Retry-After') || 'a few seconds';
-        const errorData = JSON.parse(xhr.responseText);
-        reject(new Error(`${errorData.error} (Vui lòng chờ ${retryAfter} giây)`));
+        try {
+          const errorData = JSON.parse(xhr.responseText);
+          reject(new Error(`${errorData.error} (Vui lòng chờ ${retryAfter} giây)`));
+        } catch {
+          reject(new Error(`Rate limited. Vui lòng chờ ${retryAfter} giây`));
+        }
+      } else if (xhr.status === 400) {
+        try {
+          const errorData = JSON.parse(xhr.responseText);
+          reject(new Error(`Invalid request: ${errorData.error || xhr.responseText}`));
+        } catch {
+          reject(new Error(`Upload failed with status ${xhr.status}: ${xhr.responseText}`));
+        }
       } else {
-        const error = xhr.responseText;
-        reject(new Error(`Upload failed with status ${xhr.status}: ${error}`));
+        const error = xhr.responseText || `HTTP ${xhr.status}`;
+        reject(new Error(`Upload failed: ${error}`));
       }
     });
 
