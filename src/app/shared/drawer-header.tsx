@@ -2,7 +2,6 @@
 
 import { Title, ActionIcon } from 'rizzui';
 import cn from '@core/utils/class-names';
-import { PiXBold } from 'react-icons/pi';
 
 type DrawerHeaderProps = {
   heading: string;
@@ -26,7 +25,7 @@ export default function DrawerHeader({
         {heading}
       </Title>
       <ActionIcon variant="outline" onClick={onClose} className="border-0 p-0">
-        <PiXBold className="h-auto w-5" />
+        ✕
       </ActionIcon>
     </div>
   );

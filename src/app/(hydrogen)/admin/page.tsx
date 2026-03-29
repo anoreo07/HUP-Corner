@@ -5,12 +5,6 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
 import Link from 'next/link';
 import { Button } from 'rizzui';
-import {
-  PiCheckBold,
-  PiBellBold,
-  PiSignOutBold,
-  PiListBold,
-} from 'react-icons/pi';
 import { toast } from 'react-hot-toast';
 
 export default function AdminPortalPage() {
@@ -109,8 +103,7 @@ export default function AdminPortalPage() {
               <div className="text-5xl group-hover:scale-110 transition transform">📈</div>
             </div>
             <div className="w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition cursor-pointer">
-              <PiCheckBold className="h-5 w-5" />
-              Vào Dashboard
+              ✓ Vào Dashboard
             </div>
           </div>
         </Link>
@@ -128,8 +121,7 @@ export default function AdminPortalPage() {
               <div className="text-5xl group-hover:scale-110 transition transform">🔔</div>
             </div>
             <div className="w-full mt-6 bg-amber-600 hover:bg-amber-700 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition cursor-pointer">
-              <PiBellBold className="h-5 w-5" />
-              Quản Lý Thông Báo
+              📢 Quản Lý Thông Báo
             </div>
           </div>
         </Link>
@@ -138,7 +130,6 @@ export default function AdminPortalPage() {
       {/* Quick Info */}
       <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-6">
         <h3 className="font-bold text-blue-900 mb-3 flex items-center gap-2">
-          <PiListBold className="h-5 w-5" />
           📋 Quy Trình Duyệt Tài Liệu
         </h3>
         <ul className="space-y-2 text-sm text-blue-800">
@@ -171,7 +162,6 @@ export default function AdminPortalPage() {
           onClick={handleLogout}
           className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg"
         >
-          <PiSignOutBold className="h-5 w-5" />
           Đăng xuất
         </Button>
       </div>

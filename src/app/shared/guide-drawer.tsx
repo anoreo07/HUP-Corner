@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Drawer, Button, Title } from 'rizzui';
-import { PiXBold, PiQuestionDuotone } from 'react-icons/pi';
+import { PiQuestionDuotone } from 'react-icons/pi';
 
 interface GuideDrawerProps {
   isOpen: boolean;
@@ -25,7 +25,7 @@ export function GuideDrawer({ isOpen, onClose }: GuideDrawerProps) {
             onClick={onClose}
             className="p-2 hover:bg-sky-600 rounded-lg transition"
           >
-            <PiXBold className="h-5 w-5" />
+            ✕
           </button>
         </div>
 

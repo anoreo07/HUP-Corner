@@ -12,13 +12,7 @@ import {
   Badge,
 } from 'rizzui';
 import {
-  PiFileTextDuotone,
   PiMagnifyingGlassBold,
-  PiXBold,
-  PiFilePdf,
-  PiFileDoc,
-  PiPresentation,
-  PiImage,
 } from 'react-icons/pi';
 import { DocumentWithMajor, DocumentType } from '@/types/database';
 import DocumentDetailModal from '@/app/shared/document-detail-modal';
@@ -31,17 +25,17 @@ const documentTypeLabels: Record<DocumentType, string> = {
 };
 
 const getFileIcon = (mimeType: string | null) => {
-  if (!mimeType) return <PiFileTextDuotone className="h-5 w-5" />;
+  if (!mimeType) return <span className="text-xs font-semibold text-gray-600">FILE</span>;
   
-  if (mimeType.includes('pdf')) return <PiFilePdf className="h-5 w-5 text-red-500" />;
+  if (mimeType.includes('pdf')) return <span className="text-xs font-semibold text-red-600">PDF</span>;
   if (mimeType.includes('presentation') || mimeType.includes('pptx'))
-    return <PiPresentation className="h-5 w-5 text-orange-500" />;
+    return <span className="text-xs font-semibold text-orange-600">PPT</span>;
   if (mimeType.includes('word') || mimeType.includes('document'))
-    return <PiFileDoc className="h-5 w-5 text-blue-500" />;
+    return <span className="text-xs font-semibold text-blue-600">DOC</span>;
   if (mimeType.includes('image'))
-    return <PiImage className="h-5 w-5 text-green-500" />;
+    return <span className="text-xs font-semibold text-green-600">IMG</span>;
   
-  return <PiFileTextDuotone className="h-5 w-5" />;
+  return <span className="text-xs font-semibold text-gray-600">FILE</span>;
 };
 
 const getDocumentTypeBadgeColor = (type: DocumentType) => {
@@ -152,7 +146,7 @@ export default function SearchList({ onClose }: { onClose?: () => void }) {
           className="ms-3 text-gray-500 hover:text-gray-700"
           onClick={onClose}
         >
-          <PiXBold className="h-5 w-5" />
+          ✕
         </ActionIcon>
       </div>
 

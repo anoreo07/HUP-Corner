@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState } from 'react';
-import { PiPlusBold, PiTrashBold } from 'react-icons/pi';
 import { Notification } from '@/types/database';
 
 export default function NotificationsAdminClient({ initial }: { initial: Notification[] }) {
@@ -58,7 +57,7 @@ export default function NotificationsAdminClient({ initial }: { initial: Notific
         <div className="flex items-center gap-3 mb-2">
           <label className="flex items-center gap-2"><input type="checkbox" checked={published} onChange={(e) => setPublished(e.target.checked)} /> Công khai</label>
           <button onClick={create} disabled={loading} className="ml-auto bg-[#2563EB] hover:bg-[#1D4ED8] text-white px-4 py-2 rounded inline-flex items-center gap-2">
-            <PiPlusBold /> Tạo
+            + Tạo
           </button>
         </div>
       </div>
@@ -75,7 +74,7 @@ export default function NotificationsAdminClient({ initial }: { initial: Notific
               </div>
               <div className="flex flex-col items-end gap-2">
                 <button onClick={() => togglePublish(n.id, (n as any).published)} className="text-sm px-2 py-1 bg-gray-100 rounded">{(n as any).published ? 'Đang hiển thị' : 'Ẩn'}</button>
-                <button onClick={() => remove(n.id)} className="text-red-600"> <PiTrashBold /> </button>
+                <button onClick={() => remove(n.id)} className="text-red-600"> 🗑 </button>
               </div>
             </div>
           ))}

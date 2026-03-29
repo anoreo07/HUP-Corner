@@ -1,6 +1,5 @@
 'use client';
 
-import { PiArrowLineDownBold } from 'react-icons/pi';
 import { useModal } from '@/app/shared/modal-views/use-modal';
 import { Button } from 'rizzui';
 
@@ -19,7 +18,6 @@ export default function UploadButton({ modalView }: ExportButtonProps) {
         })
       }
     >
-      <PiArrowLineDownBold className="me-1.5 h-[17px] w-[17px]" />
       Upload
     </Button>
   );

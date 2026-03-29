@@ -3,16 +3,8 @@
 import { useState, useMemo } from 'react';
 import { Modal, ActionIcon, Button } from 'rizzui';
 import {
-  PiXBold,
   PiDownloadSimpleBold,
-  PiFilePdf,
-  PiFileDoc,
-  PiPresentation,
-  PiFolderOpen,
-  PiImage,
-  PiFileTextDuotone,
   PiEyeBold,
-  PiArrowsOutBold,
 } from 'react-icons/pi';
 import { DocumentWithMajor, DocumentType } from '@/types/database';
 import { supabase } from '@/lib/supabase';
@@ -26,17 +18,17 @@ const documentTypeLabels: Record<DocumentType, string> = {
 };
 
 const getFileIcon = (mimeType: string | null) => {
-  if (!mimeType) return <PiFileTextDuotone className="h-6 w-6 text-gray-500" />;
+  if (!mimeType) return <span className="text-xs font-semibold text-gray-600">FILE</span>;
   
-  if (mimeType.includes('pdf')) return <PiFilePdf className="h-6 w-6 text-red-500" />;
+  if (mimeType.includes('pdf')) return <span className="text-xs font-semibold text-red-600">PDF</span>;
   if (mimeType.includes('presentation') || mimeType.includes('pptx'))
-    return <PiPresentation className="h-6 w-6 text-orange-500" />;
+    return <span className="text-xs font-semibold text-orange-600">PPT</span>;
   if (mimeType.includes('word') || mimeType.includes('document'))
-    return <PiFileDoc className="h-6 w-6 text-blue-500" />;
+    return <span className="text-xs font-semibold text-blue-600">DOC</span>;
   if (mimeType.includes('image'))
-    return <PiImage className="h-6 w-6 text-green-500" />;
+    return <span className="text-xs font-semibold text-green-600">IMG</span>;
   
-  return <PiFileTextDuotone className="h-6 w-6 text-gray-500" />;
+  return <span className="text-xs font-semibold text-gray-600">FILE</span>;
 };
 
 const formatFileSize = (bytes: number | null) => {
@@ -181,7 +173,7 @@ export default function DocumentDetailModal({
                 onClose();
               }}
             >
-              <PiXBold className="h-5 w-5" />
+              ✕
             </ActionIcon>
           </div>
         </div>
@@ -272,7 +264,6 @@ export default function DocumentDetailModal({
           {/* Files Section */}
           <div className="border border-gray-200 rounded-lg overflow-hidden">
             <div className="flex items-center gap-2 px-4 py-3 bg-gray-50 border-b border-gray-200">
-              <PiFolderOpen className="h-5 w-5 text-gray-500" />
               <span className="font-medium text-gray-700">
                 {documentTypeLabels[document.document_type]} (1)
               </span>
@@ -303,17 +294,7 @@ export default function DocumentDetailModal({
                         if (showPreview) setPreviewLoading(false);
                       }}
                     >
-                      {showPreview ? (
-                        <>
-                          <PiArrowsOutBold className="h-4 w-4" />
-                          ẨN
-                        </>
-                      ) : (
-                        <>
-                          <PiEyeBold className="h-4 w-4" />
-                          XEM TRƯỚC
-                        </>
-                      )}
+                      {showPreview ? 'ẨN' : 'XEM TRƯỚC'}
                     </Button>
                   )}
                   <Button
