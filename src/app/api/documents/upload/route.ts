@@ -5,8 +5,8 @@ export async function POST(req: Request) {
   try {
     const doc = await req.json();
 
-    // Validate required fields
-    if (!doc.title || !doc.major_id || !doc.file_path || !doc.file_name || !doc.file_size || !doc.mime_type) {
+    // Validate required fields (major_id is optional if user chooses "Khác")
+    if (!doc.title || !doc.file_path || !doc.file_name || !doc.file_size) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
@@ -16,19 +16,19 @@ export async function POST(req: Request) {
       .insert({
         title: doc.title,
         document_type: doc.document_type,
-        major_id: doc.major_id,
-        subject_name: doc.subject_name,
-        academic_year: doc.academic_year,
-        lecturer_name: doc.lecturer_name,
-        faculty: doc.faculty,
-        description: doc.description,
+        major_id: doc.major_id || null,
+        subject_name: doc.subject_name || null,
+        academic_year: doc.academic_year || null,
+        lecturer_name: doc.lecturer_name || null,
+        faculty: doc.faculty || null,
+        description: doc.description || null,
         storage_provider: doc.storage_provider,
         file_path: doc.file_path,
         file_name: doc.file_name,
         file_size: doc.file_size,
-        mime_type: doc.mime_type,
-        uploader_name: doc.uploader_name,
-        uploader_note: doc.uploader_note,
+        mime_type: doc.mime_type || null,
+        uploader_name: doc.uploader_name || null,
+        uploader_note: doc.uploader_note || null,
         status: 'PENDING',
         created_at: new Date().toISOString(),
       })

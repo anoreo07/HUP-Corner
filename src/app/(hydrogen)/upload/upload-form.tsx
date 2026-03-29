@@ -5,6 +5,7 @@ import { Button, Input, Select, Title } from 'rizzui';
 import { PiUploadSimpleBold, PiCheckCircleBold } from 'react-icons/pi';
 import { uploadDocument, getMajors } from '@/lib/supabase';
 import { Major, DocumentType } from '@/types/database';
+import { useFileUploader } from '@/hooks/use-file-uploader';
 
 const documentTypeOptions = [
   { value: 'EXAM', label: 'Đề thi' },
@@ -30,6 +31,8 @@ export default function UploadForm() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const { uploads, uploadFile } = useFileUploader();
 
   useEffect(() => {
     loadMajors();
@@ -81,38 +84,27 @@ export default function UploadForm() {
 
     setLoading(true);
     setError('');
+    setUploadProgress(0);
 
     try {
-      // Upload file lên Telegram channel (private) — document vẫn PENDING
-      const telegramFormData = new FormData();
-      telegramFormData.append('file', selectedFile);
-      telegramFormData.append('caption', `📄 ${formData.title}`);
+      // Upload file using the hook (with progress tracking)
+      const result = await uploadFile(selectedFile);
 
-      const uploadRes = await fetch('/api/telegram/upload', {
-        method: 'POST',
-        body: telegramFormData,
-      });
-
-      const uploadResult = await uploadRes.json();
-
-      if (!uploadRes.ok || !uploadResult.success) {
-        throw new Error(uploadResult.error || 'Upload thất bại');
+      if (!result || !result.file_id) {
+        throw new Error('Upload thất bại - không nhận được file_id từ Telegram');
       }
-
-      const telegramData = uploadResult.data;
 
       // Lưu record vào Supabase DB với status PENDING
       const saved = await uploadDocument({
         title: formData.title,
         document_type: formData.documentType as DocumentType,
         major_id: formData.majorId && formData.majorId !== '__FREE__' ? formData.majorId : null,
-        subject_name: formData.subjectName || null,
+        subject_name: formData.subjectName?.toUpperCase() || null,
         academic_year: formData.academicYear || null,
         storage_provider: 'telegram',
-        file_path: telegramData.file_id,
-        file_name: telegramData.file_name,
-        file_size: telegramData.file_size,
-        mime_type: telegramData.mime_type,
+        file_path: result.file_id,
+        file_name: result.file_name,
+        file_size: result.file_size,
       });
 
       // Notify other tabs (admin dashboard) that a new document was uploaded
@@ -135,6 +127,7 @@ export default function UploadForm() {
       setError(err.message || 'Có lỗi xảy ra khi upload');
     } finally {
       setLoading(false);
+      setUploadProgress(0);
     }
   };
 
@@ -259,6 +252,36 @@ export default function UploadForm() {
           {selectedFile && (
             <p className="mt-3 text-sm text-green-600">
               Đã chọn: {selectedFile.name} ({(selectedFile.size / 1024 / 1024).toFixed(1)} MB)
+            </p>
+          )}
+
+          {/* Progress Bar */}
+          {uploads.length > 0 && uploads[0]?.status === 'uploading' && (
+            <div className="mt-4 space-y-2">
+              <div className="flex justify-between text-xs">
+                <span className="text-gray-600">Đang tải lên...</span>
+                <span className="font-semibold text-gray-700">{uploads[0]?.progress}%</span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div
+                  className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                  style={{ width: `${uploads[0]?.progress || 0}%` }}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Upload Success Message */}
+          {uploads.length > 0 && uploads[0]?.status === 'success' && (
+            <p className="mt-3 text-sm text-green-600">
+              ✓ Upload thành công!
+            </p>
+          )}
+
+          {/* Upload Error Message */}
+          {uploads.length > 0 && uploads[0]?.status === 'error' && (
+            <p className="mt-3 text-sm text-red-600">
+              ✗ {uploads[0]?.message || 'Upload thất bại'}
             </p>
           )}
         </div>

@@ -6,5 +6,5 @@ export const metadata = {
 };
 
 export default function HomePage() {
-  redirect('/trang-chu');
+  redirect('/home');
 }

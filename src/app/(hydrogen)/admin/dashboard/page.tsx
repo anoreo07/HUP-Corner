@@ -15,14 +15,18 @@ import {
   PiSignOutBold,
   PiImage,
   PiDownloadSimpleBold,
+  PiPencilBold,
 } from 'react-icons/pi';
 import { toast } from 'react-hot-toast';
+import { EditDocumentModal } from '@/app/(hydrogen)/admin/edit-document-modal';
+import { DocumentPreviewModal } from '@/app/(hydrogen)/admin/document-preview-modal';
 import {
   getAllDocumentsForAdmin,
   approveDocument,
   rejectDocument,
   deleteDocument,
   supabase,
+  getMajors,
 } from '@/lib/supabase';
 import { DocumentWithMajor, DocumentType, DocumentStatus } from '@/types/database';
 
@@ -64,12 +68,17 @@ export default function AdminDashboardPage() {
   const router = useRouter();
   const { data: session, status } = useSession();
   const [documents, setDocuments] = useState<DocumentWithMajor[]>([]);
+  const [majors, setMajors] = useState<Array<{ id: string; name: string }>>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'PENDING' | 'APPROVED' | 'REJECTED'>('PENDING');
-
   const [counts, setCounts] = useState({ total: 0, pending: 0, approved: 0, rejected: 0 });
-
   const [approving, setApproving] = useState<string | null>(null);
+  
+  // Modal state
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedDocument, setSelectedDocument] = useState<DocumentWithMajor | null>(null);
+  const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
+  const [previewDocument, setPreviewDocument] = useState<DocumentWithMajor | null>(null);
 
   // Reload documents whenever filter changes
   useEffect(() => {
@@ -78,8 +87,18 @@ export default function AdminDashboardPage() {
       router.push('/admin/login');
       return;
     }
+    loadMajors();
     loadDocuments();
   }, [filter, status, session]);
+
+  const loadMajors = async () => {
+    try {
+      const data = await getMajors();
+      setMajors(data || []);
+    } catch (err) {
+      console.error('Error loading majors:', err);
+    }
+  };
 
   useEffect(() => {
     if (status === 'loading') return;
@@ -161,8 +180,9 @@ export default function AdminDashboardPage() {
       setLoading(true);
       let data: DocumentWithMajor[] = [];
       try {
-        const api = await import('@/lib/supabase');
-        data = await api.getAllDocumentsForAdmin();
+        const res = await fetch('/api/admin/documents/all', { cache: 'no-store' });
+        if (!res.ok) throw new Error('Failed to fetch documents');
+        data = await res.json();
       } catch (err) {
         console.error('Error calling documents API:', err);
         data = [];
@@ -177,8 +197,9 @@ export default function AdminDashboardPage() {
 
   const loadCounts = async () => {
     try {
-      const api = await import('@/lib/supabase');
-      const all = await api.getAllDocumentsForAdmin();
+      const res = await fetch('/api/admin/documents/all', { cache: 'no-store' });
+      if (!res.ok) throw new Error('Failed to fetch documents');
+      const all = await res.json();
       const total = (all || []).length;
       const pending = (all || []).filter((d: any) => d.status === 'PENDING').length;
       const approved = (all || []).filter((d: any) => d.status === 'APPROVED').length;
@@ -233,6 +254,36 @@ export default function AdminDashboardPage() {
     }
   };
 
+  const handleEdit = (document: DocumentWithMajor) => {
+    setSelectedDocument(document);
+    setIsEditModalOpen(true);
+  };
+
+  const handleSaveEdit = async (
+    documentId: string,
+    data: { title: string; subject_name: string; academic_year: string }
+  ) => {
+    try {
+      const res = await fetch('/api/admin/documents/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          documentId,
+          ...data,
+        }),
+      });
+      const result = await res.json();
+      if (!res.ok) {
+        throw new Error(result.error || 'Cập nhật thất bại');
+      }
+      await loadCounts();
+      loadDocuments();
+    } catch (err: any) {
+      console.error('Error saving document:', err);
+      throw err;
+    }
+  };
+
   const handleDelete = async (id: string) => {
     if (!confirm('Bạn có chắc muốn xóa tài liệu này? File sẽ bị xoá khỏi Telegram.')) return;
     try {
@@ -279,6 +330,22 @@ export default function AdminDashboardPage() {
       const { data } = supabase.storage.from('documents').getPublicUrl(doc.file_path);
       window.open(data.publicUrl, '_blank');
     }
+  };
+
+  const handlePreview = async (doc: DocumentWithMajor) => {
+    let previewUrl = '';
+    
+    if (doc.storage_provider === 'telegram') {
+      // Get preview URL from Telegram
+      previewUrl = `/api/telegram/download?fileId=${encodeURIComponent(doc.file_path)}&fileName=${encodeURIComponent(doc.file_name || doc.title)}`;
+    } else {
+      // Get public URL from Supabase storage
+      const { data } = supabase.storage.from('documents').getPublicUrl(doc.file_path);
+      previewUrl = data.publicUrl;
+    }
+    
+    setPreviewDocument({ ...doc, file_path: previewUrl } as any);
+    setIsPreviewModalOpen(true);
   };
 
   const handleLogout = async () => {
@@ -406,11 +473,31 @@ export default function AdminDashboardPage() {
                   <ActionIcon
                     variant="outline"
                     size="sm"
+                    className="border-cyan-500 text-cyan-500 hover:bg-cyan-50"
+                    onClick={() => handlePreview(doc)}
+                    title="Xem trước"
+                  >
+                    <PiImage className="h-4 w-4" />
+                  </ActionIcon>
+                  
+                  <ActionIcon
+                    variant="outline"
+                    size="sm"
                     className="border-blue-500 text-blue-500 hover:bg-blue-50"
                     onClick={() => handleDownload(doc)}
-                    title="Xem file"
+                    title="Tải file"
                   >
                     <PiDownloadSimpleBold className="h-4 w-4" />
+                  </ActionIcon>
+                  
+                  <ActionIcon
+                    variant="outline"
+                    size="sm"
+                    className="border-purple-500 text-purple-500 hover:bg-purple-50"
+                    onClick={() => handleEdit(doc)}
+                    title="Sửa"
+                  >
+                    <PiPencilBold className="h-4 w-4" />
                   </ActionIcon>
                   
                   {doc.status === 'PENDING' && (
@@ -456,6 +543,30 @@ export default function AdminDashboardPage() {
           </div>
         )}
       </div>
+
+      {/* Edit Modal */}
+      <EditDocumentModal
+        isOpen={isEditModalOpen}
+        document={selectedDocument}
+        majors={majors}
+        onClose={() => {
+          setIsEditModalOpen(false);
+          setSelectedDocument(null);
+        }}
+        onSave={handleSaveEdit}
+      />
+
+      {/* Preview Modal */}
+      <DocumentPreviewModal
+        isOpen={isPreviewModalOpen}
+        documentName={previewDocument?.file_name || previewDocument?.title || 'Tài liệu'}
+        documentUrl={previewDocument?.file_path || ''}
+        mimeType={previewDocument?.mime_type}
+        onClose={() => {
+          setIsPreviewModalOpen(false);
+          setPreviewDocument(null);
+        }}
+      />
     </div>
   );
 }

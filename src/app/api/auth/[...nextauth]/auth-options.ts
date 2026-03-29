@@ -107,11 +107,16 @@ export const authOptions: NextAuthOptions = {
         }
       },
     }),
-    GoogleProvider({
-      clientId: env.GOOGLE_CLIENT_ID || '',
-      clientSecret: env.GOOGLE_CLIENT_SECRET || '',
-      allowDangerousEmailAccountLinking: true,
-    }),
+    // Only add Google provider if credentials are configured
+    ...(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET
+      ? [
+          GoogleProvider({
+            clientId: env.GOOGLE_CLIENT_ID,
+            clientSecret: env.GOOGLE_CLIENT_SECRET,
+            allowDangerousEmailAccountLinking: true,
+          }),
+        ]
+      : []),
   ],
   secret: env.NEXTAUTH_SECRET || 'development-secret-key-change-in-production',
 };

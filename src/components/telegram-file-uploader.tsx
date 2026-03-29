@@ -10,31 +10,22 @@ interface UploadProgress {
   message?: string;
 }
 
-/**
- * Telegram File Uploader Component
- * 
- * ⚠️ SECURITY NOTES:
- * - KHÔNG bao giờ expose TELEGRAM_BOT_TOKEN trực tiếp ở client-side
- * - Component này gọi tới /api/telegram/upload-proxy endpoint
- * - Proxy endpoint xác thực request và truyền token từ server (ENV)
- * - Điều này bảo vệ token khỏi bị lộ công khai
- */
+// Telegram File Uploader Component
 export function TelegramFileUploader() {
   const [uploads, setUploads] = useState<UploadProgress[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  /**
-   * Xác thực file trước khi upload
-   */
   const validateFile = (file: File): { valid: boolean; message?: string } => {
-    const maxSize = 20 * 1024 * 1024; // 20MB (Telegram limit)
+    const maxSize = 20 * 1024 * 1024; 
     const allowedTypes = [
       'application/pdf',
       'application/msword',
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
       'application/vnd.ms-excel',
       'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'application/vnd.ms-powerpoint',
+      'application/vnd.openxmlformats-officedocument.presentationml.presentation',
       'image/jpeg',
       'image/png',
       'video/mp4',
@@ -58,12 +49,6 @@ export function TelegramFileUploader() {
     return { valid: true };
   };
 
-  /**
-   * Upload file trực tiếp qua proxy API Route
-   * - Sử dụng XMLHttpRequest để track progress
-   * - Gửi FormData tới API endpoint
-   * - API endpoint sẽ forward tới Telegram Bot API với token từ environment
-   */
   const uploadFile = async (file: File) => {
     const validation = validateFile(file);
     if (!validation.valid) {
@@ -218,7 +203,7 @@ export function TelegramFileUploader() {
               </button>
             </p>
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-              Tối đa 20MB (PDF, DOC, XLS, ảnh, video, âm thanh)
+              Tối đa 20MB (PDF, DOC, XLS, PPT, ảnh, video, âm thanh)
             </p>
           </div>
         </div>

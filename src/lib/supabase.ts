@@ -217,3 +217,45 @@ export async function deleteDocument(id: string): Promise<boolean> {
 
   return true;
 }
+
+export async function getOtherDocumentsPaginated(
+  page: number = 1,
+  perPage: number = 12
+): Promise<{ data: DocumentWithMajor[]; count: number; page: number; perPage: number; totalPages: number }> {
+  const start = (page - 1) * perPage;
+  const end = start + perPage - 1;
+
+  if (typeof window === 'undefined') {
+    const { getSupabaseAdmin } = await import('./supabaseAdmin');
+    const supabaseAdmin = getSupabaseAdmin();
+
+    const { data, error, count } = await supabaseAdmin
+      .from('documents')
+      .select('*, majors(*)', { count: 'exact' })
+      .eq('status', 'APPROVED')
+      .is('major_id', null)
+      .order('created_at', { ascending: false })
+      .range(start, end);
+
+    if (error) throw error;
+
+    const totalPages = Math.ceil((count || 0) / perPage);
+
+    return {
+      data: (data as DocumentWithMajor[]) || [],
+      count: count || 0,
+      page,
+      perPage,
+      totalPages,
+    };
+  }
+
+  // Fallback for client-side (shouldn't happen for this page)
+  return {
+    data: [],
+    count: 0,
+    page,
+    perPage,
+    totalPages: 0,
+  };
+}

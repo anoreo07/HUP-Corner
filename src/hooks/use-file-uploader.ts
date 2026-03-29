@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import { uploadFileWithChunking, calculateChunks, needsChunking } from '@/utils/file-chunking';
 
 export interface UseFileUploaderOptions {
   maxSize?: number; // bytes
@@ -31,6 +32,8 @@ const DEFAULT_OPTIONS: UseFileUploaderOptions = {
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     'application/vnd.ms-excel',
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'application/vnd.ms-powerpoint',
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation',
     'image/jpeg',
     'image/png',
     'video/mp4',
@@ -91,98 +94,89 @@ export function useFileUploader(options: UseFileUploaderOptions = {}) {
       }
 
       const uploadIndex = uploads.length;
+      
+      // Check if file needs chunking
+      const isChunked = needsChunking(file.size);
+      const chunkCount = calculateChunks(file.size);
+
       setUploads((prev) => [
         ...prev,
         {
           fileName: file.name,
           progress: 0,
           status: 'uploading',
+          message: isChunked ? `Chia nhỏ file thành ${chunkCount} phần...` : undefined,
         },
       ]);
 
-      return new Promise<FileUploadResult | null>((resolve) => {
-        const xhr = new XMLHttpRequest();
-
-        xhr.upload.addEventListener('progress', (event) => {
-          if (event.lengthComputable) {
-            const percentComplete = (event.loaded / event.total) * 100;
-            setUploads((prev) => {
-              const updated = [...prev];
-              updated[uploadIndex] = {
-                ...updated[uploadIndex],
-                progress: Math.round(percentComplete),
-              };
-              return updated;
-            });
-          }
-        });
-
-        xhr.addEventListener('load', () => {
-          try {
-            const response = JSON.parse(xhr.responseText);
-
-            if (xhr.status === 200) {
-              setUploads((prev) => {
-                const updated = [...prev];
-                updated[uploadIndex] = {
-                  ...updated[uploadIndex],
-                  status: 'success',
-                  progress: 100,
-                  message: `Uploaded: ${response.file_name}`,
-                  result: response,
-                };
-                return updated;
-              });
-              resolve(response);
-            } else {
-              throw new Error(response.error || 'Upload failed');
-            }
-          } catch (error) {
-            const message =
-              error instanceof Error ? error.message : 'Upload failed';
-            setUploads((prev) => {
-              const updated = [...prev];
-              updated[uploadIndex] = {
-                ...updated[uploadIndex],
-                status: 'error',
-                message,
-              };
-              return updated;
-            });
-            resolve(null);
-          }
-        });
-
-        xhr.addEventListener('error', () => {
+      try {
+        // Get chat_id from environment
+        const chatId = process.env.NEXT_PUBLIC_TELEGRAM_CHANNEL_ID || '';
+        
+        // Upload with automatic chunking
+        const fileIds = await uploadFileWithChunking(file, chatId, (progress, message) => {
           setUploads((prev) => {
             const updated = [...prev];
             updated[uploadIndex] = {
               ...updated[uploadIndex],
-              status: 'error',
-              message: 'Network error',
+              progress,
+              message: message || (isChunked ? `Đang upload... (${progress}%)` : undefined),
             };
             return updated;
           });
-          resolve(null);
         });
 
-        const formData = new FormData();
-        formData.append('document', file);
-        
-        if (chatId) {
-          formData.append('chat_id', chatId);
-        } else if (process.env.NEXT_PUBLIC_TELEGRAM_CHANNEL_ID) {
-          formData.append('chat_id', process.env.NEXT_PUBLIC_TELEGRAM_CHANNEL_ID);
+        if (!fileIds || fileIds.length === 0) {
+          throw new Error('Upload thất bại - không nhận được file_id từ Telegram');
         }
 
-        formData.append(
-          'caption',
-          `📄 ${file.name} (${(file.size / 1024 / 1024).toFixed(2)}MB)`
-        );
+        // For now, return the first file_id (or you can handle multiple file_ids)
+        const firstFileId = fileIds[0];
+        const result: FileUploadResult = {
+          file_id: firstFileId,
+          file_unique_id: firstFileId,
+          file_name: file.name,
+          file_size: file.size,
+          message_id: 0,
+        };
 
-        xhr.open('POST', '/api/telegram/upload-proxy');
-        xhr.send(formData);
-      });
+        // If file was chunked, add info about chunks
+        if (isChunked) {
+          result.file_id = JSON.stringify({
+            chunks: fileIds,
+            original_name: file.name,
+            chunk_count: chunkCount,
+          });
+        }
+
+        setUploads((prev) => {
+          const updated = [...prev];
+          updated[uploadIndex] = {
+            ...updated[uploadIndex],
+            status: 'success',
+            progress: 100,
+            message: isChunked 
+              ? `✓ Upload thành công! (${chunkCount} phần)`
+              : `✓ Upload thành công!`,
+            result,
+          };
+          return updated;
+        });
+
+        return result;
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Upload failed';
+        setUploads((prev) => {
+          const updated = [...prev];
+          updated[uploadIndex] = {
+            ...updated[uploadIndex],
+            status: 'error',
+            message,
+          };
+          return updated;
+        });
+        return null;
+      }
     },
     [validateFile, uploads.length]
   );

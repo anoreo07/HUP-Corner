@@ -6,12 +6,14 @@ export async function GET(req: Request) {
     const url = new URL(req.url);
     const q = url.searchParams.get('q') || '';
 
-      const supabaseAdmin = getSupabaseAdmin();
-      const { data, error } = await supabaseAdmin
+    const supabaseAdmin = getSupabaseAdmin();
+    
+    // Search in both title and subject_name fields
+    const { data, error } = await supabaseAdmin
       .from('documents')
       .select('*, majors(*)')
       .eq('status', 'APPROVED')
-      .ilike('title', `%${q}%`)
+      .or(`title.ilike.%${q}%,subject_name.ilike.%${q}%`)
       .order('created_at', { ascending: false })
       .limit(50);
 

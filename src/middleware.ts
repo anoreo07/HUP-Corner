@@ -27,9 +27,9 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // Redirect root to trang-chu
+  // Redirect root to home
   if (pathname === '/') {
-    return NextResponse.redirect(new URL('/trang-chu', request.url));
+    return NextResponse.redirect(new URL('/home', request.url));
   }
 
   return NextResponse.next();

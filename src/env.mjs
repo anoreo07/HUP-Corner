@@ -24,6 +24,9 @@ export const env = createEnv({
     TELEGRAM_BOT_TOKEN: z.string().optional(),
     TELEGRAM_CHANNEL_ID: z.string().optional(),
 
+    // Supabase Server-side Key
+    SUPABASE_SERVICE_ROLE_KEY: z.string().optional(),
+
     // Admin
     ADMIN_PASSWORD: z.string().optional(),
   },

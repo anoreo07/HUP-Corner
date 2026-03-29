@@ -107,7 +107,7 @@ export default function SearchList({ onClose }: { onClose?: () => void }) {
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && searchText.trim().length > 0) {
       onClose?.();
-      router.push(`/tat-ca?search=${encodeURIComponent(searchText.trim())}`);
+      router.push(`/all-majors?search=${encodeURIComponent(searchText.trim())}`);
     }
   };
 

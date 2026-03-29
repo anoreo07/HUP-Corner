@@ -7,3 +7,13 @@ export const rateLimiter = rateLimit({
   standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
 });
+
+export const uploadRateLimiter = rateLimit({
+  windowMs: 1 * 60 * 1000, // 1 minute
+  max: 7, // Limit each IP to 7 uploads per minute
+  message: 'Quá nhiều upload. Vui lòng chờ 1 phút trước khi upload tiếp.',
+  standardHeaders: true,
+  legacyHeaders: false,
+  skipSuccessfulRequests: false, // Count all requests, even successful ones
+  skipFailedRequests: false, // Count failed requests too
+});

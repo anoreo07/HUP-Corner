@@ -22,7 +22,7 @@ export default function AdminLoginPage() {
         password,
       } as any);
       if (res?.ok) {
-        router.push('/admin/dashboard');
+        router.push('/admin?justLoggedIn=true');
       } else {
         setError((res as any)?.error || 'Mật khẩu không đúng');
         setLoading(false);
