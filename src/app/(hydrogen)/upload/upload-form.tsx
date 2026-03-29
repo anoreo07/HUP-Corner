@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { Button, Input, Select, Title } from 'rizzui';
-import { PiUploadSimpleBold, PiCheckCircleBold } from 'react-icons/pi';
 import { uploadDocument, getMajors } from '@/lib/supabase';
 import { Major, DocumentType } from '@/types/database';
 import { useFileUploader } from '@/hooks/use-file-uploader';
@@ -150,7 +149,7 @@ export default function UploadForm() {
       <div className="rounded-2xl bg-white p-8 shadow-sm border border-gray-100">
         <div className="text-center py-8">
           <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-green-100">
-            <PiCheckCircleBold className="h-10 w-10 text-green-600" />
+            <span className="text-3xl font-bold text-green-600">✓</span>
           </div>
           <Title as="h2" className="text-2xl font-bold text-gray-900 mb-2">
             Đăng tải thành công!
@@ -259,7 +258,7 @@ export default function UploadForm() {
         </div>
 
         <div className="rounded-xl border-2 border-dashed border-gray-300 p-8 text-center">
-          <PiUploadSimpleBold className="mx-auto h-12 w-12 text-gray-400" />
+          <p className="text-2xl mb-2">📄</p>
           <p className="mt-2 text-sm text-gray-600">
             Kéo thả file vào đây hoặc click để chọn file
           </p>
@@ -329,7 +328,6 @@ export default function UploadForm() {
           isLoading={loading}
           disabled={!formData.title || !formData.documentType || !selectedFile}
         >
-          <PiUploadSimpleBold className="mr-2 h-5 w-5" />
           Đăng tải tài liệu
         </Button>
       </form>

@@ -3,20 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
-import { Button, Badge, Title, ActionIcon, Empty } from 'rizzui';
-import {
-  PiCheckBold,
-  PiXBold,
-  PiTrashBold,
-  PiFilePdf,
-  PiFileDoc,
-  PiPresentation,
-  PiFileTextDuotone,
-  PiSignOutBold,
-  PiImage,
-  PiDownloadSimpleBold,
-  PiPencilBold,
-} from 'react-icons/pi';
+import { Button, Badge, Title, Empty } from 'rizzui';
 import { toast } from 'react-hot-toast';
 import { EditDocumentModal } from '@/app/(hydrogen)/admin/edit-document-modal';
 import { DocumentPreviewModal } from '@/app/(hydrogen)/admin/document-preview-modal';
@@ -38,25 +25,19 @@ const documentTypeLabels: Record<DocumentType, string> = {
 };
 
 const getFileIcon = (mimeType: string | null) => {
-  if (!mimeType) return <PiFileTextDuotone className="h-6 w-6" />;
+  // Simplified: Just return colored text labels instead of icons
+  if (!mimeType) return <span className="text-xs font-semibold text-gray-600">FILE</span>;
   
-  // PDF files
-  if (mimeType.includes('pdf')) return <PiFilePdf className="h-6 w-6 text-red-500" />;
-  
-  // PowerPoint/Presentation files
+  if (mimeType.includes('pdf')) return <span className="text-xs font-semibold text-red-600">PDF</span>;
   if (mimeType.includes('presentation') || mimeType.includes('pptx')) 
-    return <PiPresentation className="h-6 w-6 text-orange-500" />;
-  
-  // Word/Document files (.doc, .docx)
+    return <span className="text-xs font-semibold text-orange-600">PPT</span>;
   if (mimeType.includes('word') || mimeType.includes('document') || 
       mimeType.includes('wordprocessingml') || mimeType.includes('msword')) 
-    return <PiFileDoc className="h-6 w-6 text-blue-500" />;
-  
-  // Image files
+    return <span className="text-xs font-semibold text-blue-600">DOC</span>;
   if (mimeType.includes('image')) 
-    return <PiImage className="h-6 w-6 text-green-500" />;
+    return <span className="text-xs font-semibold text-green-600">IMG</span>;
   
-  return <PiFileTextDuotone className="h-6 w-6" />;
+  return <span className="text-xs font-semibold text-gray-600">FILE</span>;
 };
 
 const getStatusBadge = (status: DocumentStatus) => {
@@ -231,7 +212,8 @@ export default function AdminDashboardPage() {
       }
       toast.success('Đã duyệt và lưu vào Telegram!');
       await loadCounts();
-      loadDocuments();
+      await loadDocuments();
+      setFilter('PENDING');
     } catch (err: any) {
       toast.error(err.message || 'Có lỗi khi duyệt tài liệu');
     } finally {
@@ -253,7 +235,8 @@ export default function AdminDashboardPage() {
       }
       toast.success('Đã từ chối và xoá file!');
       await loadCounts();
-      loadDocuments();
+      await loadDocuments();
+      setFilter('PENDING');
     } catch (err: any) {
       toast.error(err.message || 'Có lỗi khi từ chối tài liệu');
     }
@@ -281,8 +264,9 @@ export default function AdminDashboardPage() {
       if (!res.ok) {
         throw new Error(result.error || 'Cập nhật thất bại');
       }
+      toast.success('Cập nhật thành công!');
       await loadCounts();
-      loadDocuments();
+      await loadDocuments();
     } catch (err: any) {
       throw err;
     }
@@ -302,7 +286,8 @@ export default function AdminDashboardPage() {
       }
       toast.success('Đã xoá tài liệu!');
       await loadCounts();
-      loadDocuments();
+      await loadDocuments();
+      setFilter('PENDING');
     } catch (err: any) {
       toast.error(err.message || 'Có lỗi khi xoá tài liệu');
     }
@@ -359,8 +344,20 @@ export default function AdminDashboardPage() {
     return doc.status === filter;
   });
 
-  if (status === 'loading') return null;
-  if (!session || (session.user as any)?.role !== 'admin') return null;
+  if (status === 'loading') {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Đang xác thực...</p>
+        </div>
+      </div>
+    );
+  }
+  
+  if (!session || (session.user as any)?.role !== 'admin') {
+    return null;
+  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -376,10 +373,8 @@ export default function AdminDashboardPage() {
         </div>
         <Button
           variant="outline"
-          className="flex items-center gap-2"
           onClick={handleLogout}
         >
-          <PiSignOutBold className="h-4 w-4" />
           Đăng xuất
         </Button>
       </div>
@@ -471,73 +466,60 @@ export default function AdminDashboardPage() {
                 <div className="flex items-center gap-3">
                   {getStatusBadge(doc.status)}
                   
-                  <ActionIcon
+                  <Button
                     variant="outline"
                     size="sm"
-                    className="border-cyan-500 text-cyan-500 hover:bg-cyan-50"
                     onClick={() => handlePreview(doc)}
-                    title="Xem trước"
                   >
-                    <PiImage className="h-4 w-4" />
-                  </ActionIcon>
+                    Xem
+                  </Button>
                   
-                  <ActionIcon
+                  <Button
                     variant="outline"
                     size="sm"
-                    className="border-blue-500 text-blue-500 hover:bg-blue-50"
                     onClick={() => handleDownload(doc)}
-                    title="Tải file"
                   >
-                    <PiDownloadSimpleBold className="h-4 w-4" />
-                  </ActionIcon>
+                    Tải
+                  </Button>
                   
-                  <ActionIcon
+                  <Button
                     variant="outline"
                     size="sm"
-                    className="border-purple-500 text-purple-500 hover:bg-purple-50"
                     onClick={() => handleEdit(doc)}
-                    title="Sửa"
                   >
-                    <PiPencilBold className="h-4 w-4" />
-                  </ActionIcon>
+                    Sửa
+                  </Button>
                   
                   {doc.status === 'PENDING' && (
                     <>
-                      <ActionIcon
+                      <Button
                         variant="outline"
                         size="sm"
                         className="border-green-500 text-green-500 hover:bg-green-50"
                         onClick={() => handleApprove(doc.id)}
-                        title="Duyệt"
                         disabled={approving === doc.id}
                       >
-                        {approving === doc.id ? (
-                          <span className="h-4 w-4 animate-spin rounded-full border-2 border-green-500 border-t-transparent" />
-                        ) : (
-                          <PiCheckBold className="h-4 w-4" />
-                        )}
-                      </ActionIcon>
-                      <ActionIcon
+                        {approving === doc.id ? 'Đang...' : 'Duyệt'}
+                      </Button>
+                      <Button
                         variant="outline"
                         size="sm"
                         className="border-red-500 text-red-500 hover:bg-red-50"
                         onClick={() => handleReject(doc.id)}
-                        title="Từ chối"
                       >
-                        <PiXBold className="h-4 w-4" />
-                      </ActionIcon>
+                        Từ chối
+                      </Button>
                     </>
                   )}
                   
-                  <ActionIcon
+                  <Button
                     variant="outline"
                     size="sm"
-                    className="border-gray-300 text-gray-500 hover:bg-gray-50"
+                    className="border-gray-300 text-gray-500 hover:bg-red-50"
                     onClick={() => handleDelete(doc.id)}
-                    title="Xóa"
                   >
-                    <PiTrashBold className="h-4 w-4" />
-                  </ActionIcon>
+                    Xóa
+                  </Button>
                 </div>
               </div>
             ))}
