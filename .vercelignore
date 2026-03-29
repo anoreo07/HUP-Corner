@@ -1,0 +1,15 @@
+.env
+.env.local
+.env.*.local
+node_modules
+.next
+.git
+.gitignore
+README.md
+pnpm-debug.log
+npm-debug.log
+yarn-error.log
+.DS_Store
+dist
+build
+.turbo

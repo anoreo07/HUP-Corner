@@ -132,7 +132,8 @@
     "tailwindcss": "^3.4.10"
   },
   "engines": {
-    "node": ">=18.15.0"
+    "node": "18.x || 20.x",
+    "pnpm": ">=8.0.0"
   },
   "readme": "ERROR: No README data found!",
   "_id": "isomorphic-furyroad@0.0.1"
