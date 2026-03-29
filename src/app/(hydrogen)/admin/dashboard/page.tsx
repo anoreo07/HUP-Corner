@@ -40,11 +40,19 @@ const documentTypeLabels: Record<DocumentType, string> = {
 const getFileIcon = (mimeType: string | null) => {
   if (!mimeType) return <PiFileTextDuotone className="h-6 w-6" />;
   
+  // PDF files
   if (mimeType.includes('pdf')) return <PiFilePdf className="h-6 w-6 text-red-500" />;
+  
+  // PowerPoint/Presentation files
   if (mimeType.includes('presentation') || mimeType.includes('pptx')) 
     return <PiPresentation className="h-6 w-6 text-orange-500" />;
-  if (mimeType.includes('word') || mimeType.includes('document')) 
+  
+  // Word/Document files (.doc, .docx)
+  if (mimeType.includes('word') || mimeType.includes('document') || 
+      mimeType.includes('wordprocessingml') || mimeType.includes('msword')) 
     return <PiFileDoc className="h-6 w-6 text-blue-500" />;
+  
+  // Image files
   if (mimeType.includes('image')) 
     return <PiImage className="h-6 w-6 text-green-500" />;
   

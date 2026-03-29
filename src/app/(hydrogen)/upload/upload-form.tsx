@@ -239,12 +239,12 @@ export default function UploadForm() {
             Kéo thả file vào đây hoặc click để chọn file
           </p>
           <p className="mt-1 text-xs text-gray-400">
-            Hỗ trợ: PDF, PPTX, DOCX, JPG, PNG (Tối đa 50MB)
+            Hỗ trợ: PDF, PPTX, DOCX, DOC, JPG, PNG (Tối đa 50MB)
           </p>
           <input
             type="file"
             className="hidden"
-            accept=".pdf,.pptx,.docx,.jpg,.jpeg,.png"
+            accept=".pdf,.pptx,.docx,.doc,.jpg,.jpeg,.png"
             onChange={handleFileChange}
           />
           <Button

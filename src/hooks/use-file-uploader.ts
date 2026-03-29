@@ -28,12 +28,12 @@ const DEFAULT_OPTIONS: UseFileUploaderOptions = {
   maxSize: 500 * 1024 * 1024, // 500MB - chunking sẽ handle large files
   allowedTypes: [
     'application/pdf',
-    'application/msword',
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/msword', // .doc
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // .docx
     'application/vnd.ms-excel',
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     'application/vnd.ms-powerpoint',
-    'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation', // .pptx
     'image/jpeg',
     'image/png',
     'video/mp4',
@@ -45,6 +45,22 @@ export function useFileUploader(options: UseFileUploaderOptions = {}) {
   const [uploads, setUploads] = useState<FileUploadState[]>([]);
   const opts = useMemo(() => ({ ...DEFAULT_OPTIONS, ...options }), [options]);
 
+  // Map file extensions to their MIME types (fallback for browser detection issues)
+  const extensionToMimeType: Record<string, string> = {
+    '.pdf': 'application/pdf',
+    '.doc': 'application/msword',
+    '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    '.xls': 'application/vnd.ms-excel',
+    '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    '.ppt': 'application/vnd.ms-powerpoint',
+    '.pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    '.jpg': 'image/jpeg',
+    '.jpeg': 'image/jpeg',
+    '.png': 'image/png',
+    '.mp4': 'video/mp4',
+    '.mp3': 'audio/mpeg',
+  };
+
   const validateFile = useCallback(
     (file: File): { valid: boolean; message?: string } => {
       if (file.size > opts.maxSize!) {
@@ -54,10 +70,18 @@ export function useFileUploader(options: UseFileUploaderOptions = {}) {
         };
       }
 
-      if (!opts.allowedTypes!.includes(file.type)) {
+      // Get file extension
+      const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase();
+      const detectedMimeType = extensionToMimeType[fileExtension];
+
+      // Check MIME type by browser detection OR by file extension
+      const isMimeTypeValid = opts.allowedTypes!.includes(file.type) || 
+                             (detectedMimeType && opts.allowedTypes!.includes(detectedMimeType));
+
+      if (!isMimeTypeValid) {
         return {
           valid: false,
-          message: `Định dạng không hỗ trợ: ${file.type}`,
+          message: `Định dạng không hỗ trợ: ${fileExtension}. Hỗ trợ: PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX, JPG, PNG, MP4, MP3`,
         };
       }
 
