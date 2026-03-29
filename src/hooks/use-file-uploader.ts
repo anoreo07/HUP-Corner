@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { uploadFileWithChunking, calculateChunks, needsChunking } from '@/utils/file-chunking';
 
 export interface UseFileUploaderOptions {
@@ -55,8 +55,8 @@ const DEFAULT_OPTIONS: UseFileUploaderOptions = {
  * ```
  */
 export function useFileUploader(options: UseFileUploaderOptions = {}) {
-  const opts = { ...DEFAULT_OPTIONS, ...options };
   const [uploads, setUploads] = useState<FileUploadState[]>([]);
+  const opts = useMemo(() => ({ ...DEFAULT_OPTIONS, ...options }), [options]);
 
   const validateFile = useCallback(
     (file: File): { valid: boolean; message?: string } => {

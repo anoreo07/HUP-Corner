@@ -89,7 +89,7 @@ export default function AdminDashboardPage() {
     }
     loadMajors();
     loadDocuments();
-  }, [filter, status, session]);
+  }, [filter, status, session, router]);
 
   const loadMajors = async () => {
     try {

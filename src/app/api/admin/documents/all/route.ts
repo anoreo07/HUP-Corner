@@ -2,6 +2,8 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { getToken } from 'next-auth/jwt';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 
+export const dynamic = 'force-dynamic';
+
 const NEXTAUTH_SECRET = process.env.NEXTAUTH_SECRET || '';
 
 export async function GET(req: NextRequest) {

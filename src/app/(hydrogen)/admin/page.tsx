@@ -144,7 +144,7 @@ export default function AdminPortalPage() {
         <ul className="space-y-2 text-sm text-blue-800">
           <li className="flex gap-2">
             <span className="font-bold">1.</span>
-            <span>Người dùng tải lên tài liệu → tài liệu có trạng thái "Chờ duyệt"</span>
+            <span>Người dùng tải lên tài liệu → tài liệu có trạng thái &quot;Chờ duyệt&quot;</span>
           </li>
           <li className="flex gap-2">
             <span className="font-bold">2.</span>
@@ -156,7 +156,7 @@ export default function AdminPortalPage() {
           </li>
           <li className="flex gap-2">
             <span className="font-bold">4.</span>
-            <span>Admin nhấn "Duyệt" → tài liệu được lưu vào Telegram và hiển thị công khai</span>
+            <span>Admin nhấn &quot;Duyệt&quot; → tài liệu được lưu vào Telegram và hiển thị công khai</span>
           </li>
           <li className="flex gap-2">
             <span className="font-bold">5.</span>

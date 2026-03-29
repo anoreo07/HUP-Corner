@@ -54,7 +54,7 @@ export function GuideDrawer({ isOpen, onClose }: GuideDrawerProps) {
               <h3 className="text-lg font-bold text-gray-900">Lọc Theo Ngành Học</h3>
             </div>
             <p className="text-gray-700 leading-relaxed ml-10">
-              Chọn một ngành học từ danh sách bên trái hoặc phần "TÀI LIỆU THEO NGÀNH" để xem tài liệu của ngành đó. 
+              Chọn một ngành học từ danh sách bên trái hoặc phần &quot;TÀI LIỆU THEO NGÀNH&quot; để xem tài liệu của ngành đó. 
               Bạn cũng có thể xem <strong>Tất Cả Tài Liệu</strong> từ tất cả các ngành.
             </p>
           </div>
@@ -103,7 +103,7 @@ export function GuideDrawer({ isOpen, onClose }: GuideDrawerProps) {
               </li>
               <li className="flex gap-2">
                 <span className="font-bold text-sky-600">•</span>
-                <span>Nhấn "Tải lên" và chờ hoàn tất</span>
+                <span>Nhấn &quot;Tải lên&quot; và chờ hoàn tất</span>
               </li>
             </ul>
           </div>
@@ -117,7 +117,7 @@ export function GuideDrawer({ isOpen, onClose }: GuideDrawerProps) {
               <h3 className="text-lg font-bold text-gray-900">Quy Trình Duyệt</h3>
             </div>
             <p className="text-gray-700 leading-relaxed ml-10">
-              Sau khi tải lên, tài liệu sẽ chuyển vào trạng thái <strong>"Chờ duyệt"</strong>. 
+              Sau khi tải lên, tài liệu sẽ chuyển vào trạng thái <strong>&quot;Chờ duyệt&quot;</strong>. 
               Admin sẽ kiểm tra và duyệt tài liệu trong thời gian sớm nhất. 
               Khi được duyệt, tài liệu sẽ xuất hiện công khai trên website.
             </p>
