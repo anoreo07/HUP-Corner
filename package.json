@@ -4,6 +4,9 @@
   "description": "A nextjs template to build dashboard",
   "private": true,
   "packageManager": "npm@10.8.2",
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
     "dev": "next dev",
     "lint": "next lint",
