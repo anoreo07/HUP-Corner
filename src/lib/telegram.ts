@@ -273,12 +273,19 @@ export async function downloadFileAuto(filePath: string): Promise<{
     }
   }
 
-  // Download all chunks and concatenate
-  const buffers: Buffer[] = [];
-  for (const chunk of parsed.chunks) {
-    const { buffer } = await downloadFileFromTelegram(chunk.fileId);
-    buffers.push(buffer);
-  }
+  // Download all chunks in parallel for faster performance
+  console.log(`📥 Downloading ${parsed.chunks.length} chunks in parallel...`);
+  const downloadPromises = parsed.chunks.map(chunk => 
+    downloadFileFromTelegram(chunk.fileId)
+      .then(({ buffer }) => buffer)
+      .catch(err => {
+        console.error(`Failed to download chunk ${chunk.fileId}:`, err);
+        throw err;
+      })
+  );
 
-  return { buffer: Buffer.concat(buffers) };
+  const buffers = await Promise.all(downloadPromises);
+  console.log(`✅ All ${parsed.chunks.length} chunks downloaded successfully`);
+
+  return { buffer: Buffer.concat(buffers as any) };
 }

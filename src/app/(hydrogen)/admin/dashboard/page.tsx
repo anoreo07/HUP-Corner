@@ -307,7 +307,6 @@ export default function AdminDashboardPage() {
 
   const handleDownload = async (doc: DocumentWithMajor) => {
     if (doc.storage_provider === 'telegram') {
-      // Download from Telegram via API
       try {
         const response = await fetch(
           `/api/telegram/download?fileId=${encodeURIComponent(doc.file_path)}&fileName=${encodeURIComponent(doc.file_name || doc.title)}`
@@ -323,7 +322,6 @@ export default function AdminDashboardPage() {
         window.URL.revokeObjectURL(url);
         a.remove();
       } catch (err) {
-        console.error('Download error:', err);
         toast.error('Lỗi khi tải file');
       }
     } else {
@@ -356,6 +354,17 @@ export default function AdminDashboardPage() {
   const filteredDocuments = documents.filter((doc) => {
     if (filter === 'all') return true;
     return doc.status === filter;
+  });
+
+  // Debug logs
+  console.log('🔍 Admin Dashboard Debug:', {
+    totalDocuments: documents.length,
+    filter,
+    filteredCount: filteredDocuments.length,
+    pending: documents.filter((d: any) => d.status === 'PENDING').length,
+    approved: documents.filter((d: any) => d.status === 'APPROVED').length,
+    rejected: documents.filter((d: any) => d.status === 'REJECTED').length,
+    sampleDoc: documents[0],
   });
 
   if (status === 'loading') return null;

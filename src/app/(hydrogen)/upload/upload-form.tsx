@@ -94,6 +94,11 @@ export default function UploadForm() {
         throw new Error('Upload thất bại - không nhận được file_id từ Telegram');
       }
 
+      // file_id is either:
+      // - Single file: "file_id123"
+      // - Chunked: "chunk:file_id1,file_id2,file_id3,..."
+      // Both formats are already handled by parseTelegramFilePath in telegram.ts
+
       // Lưu record vào Supabase DB với status PENDING
       const saved = await uploadDocument({
         title: formData.title,
@@ -106,6 +111,10 @@ export default function UploadForm() {
         file_name: result.file_name,
         file_size: result.file_size,
       });
+
+      if (!saved?.id) {
+        throw new Error('Upload thất bại - không nhận được document ID');
+      }
 
       // Notify other tabs (admin dashboard) that a new document was uploaded
       try {

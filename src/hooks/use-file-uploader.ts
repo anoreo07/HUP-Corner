@@ -25,7 +25,7 @@ export interface FileUploadState {
 }
 
 const DEFAULT_OPTIONS: UseFileUploaderOptions = {
-  maxSize: 20 * 1024 * 1024, // 20MB
+  maxSize: 500 * 1024 * 1024, // 500MB - chunking sẽ handle large files
   allowedTypes: [
     'application/pdf',
     'application/msword',
@@ -41,19 +41,6 @@ const DEFAULT_OPTIONS: UseFileUploaderOptions = {
   ],
 };
 
-/**
- * useFileUploader Hook
- *
- * Usage:
- * ```
- * const { uploads, uploadFile } = useFileUploader();
- *
- * const handleUpload = async (file: File) => {
- *   const result = await uploadFile(file);
- *   console.log(result);
- * };
- * ```
- */
 export function useFileUploader(options: UseFileUploaderOptions = {}) {
   const [uploads, setUploads] = useState<FileUploadState[]>([]);
   const opts = useMemo(() => ({ ...DEFAULT_OPTIONS, ...options }), [options]);
@@ -140,13 +127,10 @@ export function useFileUploader(options: UseFileUploaderOptions = {}) {
           message_id: 0,
         };
 
-        // If file was chunked, add info about chunks
+        // If file was chunked, create chunk:fileId1|msgId1,fileId2|msgId2,... format
         if (isChunked) {
-          result.file_id = JSON.stringify({
-            chunks: fileIds,
-            original_name: file.name,
-            chunk_count: chunkCount,
-          });
+          // fileIds already contains formatted strings like "fileId|msgId"
+          result.file_id = `chunk:${fileIds.join(',')}`;
         }
 
         setUploads((prev) => {

@@ -14,14 +14,18 @@ export interface FileChunk {
   totalChunks: number;
 }
 
-const CHUNK_SIZE = 18 * 1024 * 1024; // 18MB per chunk (Telegram limit 20MB)
-const TELEGRAM_LIMIT = 20 * 1024 * 1024; // 20MB
+// IMPORTANT: Vercel request body limit is ~4.5MB
+// So we chunk at 4MB to stay safe below the limit
+const CHUNK_SIZE = 4 * 1024 * 1024; // 4MB per chunk
+const VERCEL_LIMIT = 4.5 * 1024 * 1024; // 4.5MB Vercel request limit
+const TELEGRAM_LIMIT = 20 * 1024 * 1024; // 20MB Telegram file limit
 
 /**
  * Check if file needs to be chunked
+ * File should be chunked if it exceeds Vercel limit (4.5MB)
  */
 export function needsChunking(fileSize: number): boolean {
-  return fileSize > TELEGRAM_LIMIT;
+  return fileSize > VERCEL_LIMIT;
 }
 
 /**
@@ -79,7 +83,7 @@ export async function uploadChunkToTelegram(
   chunk: FileChunk,
   chatId: string,
   onProgress?: (progress: number) => void
-): Promise<{ file_id: string; file_name: string; file_size: number; chunk_info: string }> {
+): Promise<{ file_id: string; message_id: number; file_name: string; file_size: number; chunk_info: string }> {
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
 
@@ -103,6 +107,7 @@ export async function uploadChunkToTelegram(
           const result = JSON.parse(xhr.responseText);
           resolve({
             file_id: result.file_id,
+            message_id: result.message_id || 0,
             file_name: result.file_name,
             file_size: result.file_size,
             chunk_info: `Chunk ${chunk.index + 1}/${chunk.totalChunks}`,
@@ -123,10 +128,12 @@ export async function uploadChunkToTelegram(
 
     // Handle error
     xhr.addEventListener('error', () => {
+      console.error('❌ Network error during chunk upload');
       reject(new Error('Network error during chunk upload'));
     });
 
     xhr.addEventListener('abort', () => {
+      console.error('❌ Chunk upload cancelled');
       reject(new Error('Chunk upload cancelled'));
     });
 
@@ -158,6 +165,7 @@ export async function uploadFileWithChunking(
 ): Promise<string[]> {
   const chunks = splitFileIntoChunks(file);
   const fileIds: string[] = [];
+  const messageIds: (number | null)[] = [];
 
   if (onProgress) {
     if (chunks.length > 1) {
@@ -172,6 +180,7 @@ export async function uploadFileWithChunking(
     try {
       const result = await uploadChunkToTelegram(chunk, chatId || '', onProgress);
       fileIds.push(result.file_id);
+      messageIds.push(result.message_id || null);
 
       if (onProgress) {
         const progress = ((chunk.index + 1) / chunks.length) * 100;
@@ -187,6 +196,12 @@ export async function uploadFileWithChunking(
         }`
       );
     }
+  }
+
+  // Format for chunked files: "chunk:fileId1|msgId1,fileId2|msgId2,..."
+  if (fileIds.length > 1) {
+    const formatted = fileIds.map((fid, i) => `${fid}|${messageIds[i] || ''}`);
+    return formatted;
   }
 
   return fileIds;

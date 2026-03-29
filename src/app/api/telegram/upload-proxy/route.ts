@@ -54,6 +54,8 @@ export async function POST(request: NextRequest) {
     const document = formData.get('document') as Blob | null;
     const chatId = formData.get('chat_id') as string;
     const caption = formData.get('caption') as string;
+    const chunkIndex = formData.get('chunk_index') as string;
+    const totalChunks = formData.get('total_chunks') as string;
 
     // 4. Validate inputs
     if (!document) {
@@ -89,7 +91,6 @@ export async function POST(request: NextRequest) {
     const telegramData = await telegramResponse.json();
 
     if (!telegramResponse.ok) {
-      console.error('Telegram API error:', telegramData);
       return NextResponse.json(
         { error: telegramData.description || 'Telegram API error' },
         { status: telegramResponse.status }
