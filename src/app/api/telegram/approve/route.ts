@@ -40,7 +40,6 @@ export async function POST(request: NextRequest) {
       document: data,
     });
   } catch (error: any) {
-    console.error('Approve error:', error);
     return NextResponse.json(
       { error: error.message || 'Approval failed' },
       { status: 500 }

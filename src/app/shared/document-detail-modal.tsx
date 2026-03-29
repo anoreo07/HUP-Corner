@@ -142,7 +142,6 @@ export default function DocumentDetailModal({
         a.remove();
         toast.success('Tải file thành công!');
       } catch (err) {
-        console.error('Download error:', err);
         toast.error('Có lỗi khi tải file. Vui lòng thử lại.');
       } finally {
         setDownloading(false);

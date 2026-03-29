@@ -44,7 +44,6 @@ export async function POST() {
 
     return NextResponse.json({ success: true, majors: results });
   } catch (error: any) {
-    console.error('Seed majors error:', error);
     return NextResponse.json(
       { error: error.message || 'Failed to seed majors' },
       { status: 500 }

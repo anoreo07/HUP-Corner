@@ -55,7 +55,6 @@ export async function POST(request: NextRequest) {
       message: 'Document rejected and deleted',
     });
   } catch (error: any) {
-    console.error('Reject error:', error);
     return NextResponse.json(
       { error: error.message || 'Reject failed' },
       { status: 500 }

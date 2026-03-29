@@ -39,7 +39,7 @@ export default async function HomePage({ searchParams }: { searchParams?: { page
   try {
     majors = (await getMajors()) || [];
   } catch (err) {
-    console.error('Error loading majors:', err);
+    // Error loading majors
   }
 
   // Get notifications
@@ -47,7 +47,7 @@ export default async function HomePage({ searchParams }: { searchParams?: { page
   try {
     notifications = (await getNotifications()) || [];
   } catch (err) {
-    console.error('Error loading notifications:', err);
+    // Error loading notifications
   }
 
   return (

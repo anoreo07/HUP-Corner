@@ -73,7 +73,6 @@ export default function DownloadProgressPage() {
       } catch (error) {
         clearInterval(progressInterval);
         setMessage('✗ Lỗi khi tải xuống file');
-        console.error('Download error:', error);
       }
     };
 

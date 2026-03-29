@@ -86,7 +86,6 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error: any) {
-    console.error('Telegram upload error:', error);
     return NextResponse.json(
       { error: error.message || 'Upload failed' },
       { status: 500 }

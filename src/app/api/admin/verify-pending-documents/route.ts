@@ -6,10 +6,6 @@ export const dynamic = 'force-dynamic';
 
 const NEXTAUTH_SECRET = process.env.NEXTAUTH_SECRET || '';
 
-/**
- * Verify that admin can see PENDING documents
- * GET /api/admin/verify-pending-documents
- */
 export async function GET(req: NextRequest) {
   try {
     const token = await getToken({ req, secret: NEXTAUTH_SECRET });
@@ -47,7 +43,6 @@ export async function GET(req: NextRequest) {
       message: 'Admin can see all documents including PENDING',
     });
   } catch (err) {
-    console.error('Verify error:', err);
     return NextResponse.json(
       { error: 'Internal Server Error', details: (err as any).message },
       { status: 500 }

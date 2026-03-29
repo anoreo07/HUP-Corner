@@ -31,7 +31,6 @@ export async function GET(request: NextRequest) {
 
     return new NextResponse(buffer, { status: 200, headers });
   } catch (error: any) {
-    console.error('Preview error:', error);
     if (error instanceof TelegramFileTooLargeError) {
       return NextResponse.json(
         { error: error.message, code: 'TELEGRAM_FILE_TOO_LARGE' },

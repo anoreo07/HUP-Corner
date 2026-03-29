@@ -50,7 +50,6 @@ export async function uploadFileToTelegram(
   const result = await response.json();
 
   if (!result.ok) {
-    console.error('Telegram API error:', result);
     throw new Error(`Telegram API error: ${result.description || 'Unknown error'}`);
   }
 
@@ -118,7 +117,6 @@ export async function deleteMessageFromTelegram(messageId: number): Promise<bool
   const result = await response.json();
 
   if (!result.ok) {
-    console.error('Telegram deleteMessage error:', result);
     // Don't throw — deletion failure shouldn't block the reject flow
     return false;
   }
@@ -274,18 +272,15 @@ export async function downloadFileAuto(filePath: string): Promise<{
   }
 
   // Download all chunks in parallel for faster performance
-  console.log(`📥 Downloading ${parsed.chunks.length} chunks in parallel...`);
   const downloadPromises = parsed.chunks.map(chunk => 
     downloadFileFromTelegram(chunk.fileId)
       .then(({ buffer }) => buffer)
       .catch(err => {
-        console.error(`Failed to download chunk ${chunk.fileId}:`, err);
         throw err;
       })
   );
 
   const buffers = await Promise.all(downloadPromises);
-  console.log(`✅ All ${parsed.chunks.length} chunks downloaded successfully`);
 
   return { buffer: Buffer.concat(buffers as any) };
 }

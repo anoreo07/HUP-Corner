@@ -117,7 +117,6 @@ export async function POST(request: NextRequest) {
       message_id: telegramData.result.message_id,
     });
   } catch (error) {
-    console.error('Upload error:', error);
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Upload failed' },
       { status: 500 }

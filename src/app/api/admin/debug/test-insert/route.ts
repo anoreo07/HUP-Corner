@@ -41,15 +41,12 @@ export async function GET(req: NextRequest) {
       created_at: new Date().toISOString(),
     };
 
-    console.log('📝 Inserting test document:', testDoc);
-
     const { data, error } = await supabaseAdmin
       .from('documents')
       .insert([testDoc])
       .select();
 
     if (error) {
-      console.error('❌ Insert error:', error);
       return NextResponse.json(
         {
           success: false,
@@ -60,8 +57,6 @@ export async function GET(req: NextRequest) {
         { status: 500 }
       );
     }
-
-    console.log('✅ Test document inserted:', data);
 
     return NextResponse.json({
       success: true,
@@ -76,7 +71,6 @@ export async function GET(req: NextRequest) {
       ],
     });
   } catch (err) {
-    console.error('❌ Exception:', err);
     return NextResponse.json(
       {
         success: false,

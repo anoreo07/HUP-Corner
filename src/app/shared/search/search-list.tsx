@@ -85,7 +85,6 @@ export default function SearchList({ onClose }: { onClose?: () => void }) {
       const data = await res.json();
       setDocuments(data || []);
     } catch (err) {
-      console.error('Search error:', err);
       setDocuments([]);
     } finally {
       setIsLoading(false);

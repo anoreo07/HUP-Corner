@@ -103,7 +103,6 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error: any) {
-    console.error('Word preview error:', error);
     if (error instanceof TelegramFileTooLargeError) {
       return NextResponse.json(
         { error: error.message, code: 'TELEGRAM_FILE_TOO_LARGE' },

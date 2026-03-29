@@ -128,12 +128,10 @@ export async function uploadChunkToTelegram(
 
     // Handle error
     xhr.addEventListener('error', () => {
-      console.error('❌ Network error during chunk upload');
       reject(new Error('Network error during chunk upload'));
     });
 
     xhr.addEventListener('abort', () => {
-      console.error('❌ Chunk upload cancelled');
       reject(new Error('Chunk upload cancelled'));
     });
 

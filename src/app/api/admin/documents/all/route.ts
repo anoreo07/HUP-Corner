@@ -22,26 +22,11 @@ export async function GET(req: NextRequest) {
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('❌ Database error:', error);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    // Debug logging
-    const pending = (data || []).filter((d: any) => d.status === 'PENDING').length;
-    const approved = (data || []).filter((d: any) => d.status === 'APPROVED').length;
-    const rejected = (data || []).filter((d: any) => d.status === 'REJECTED').length;
-    
-    console.log('✅ Admin API /documents/all:', {
-      total: data?.length || 0,
-      pending,
-      approved,
-      rejected,
-      allStatuses: (data || []).map((d: any) => d.status),
-    });
-
     return NextResponse.json(data || []);
   } catch (err) {
-    console.error('❌ Unexpected error:', err);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

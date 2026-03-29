@@ -96,7 +96,7 @@ export default function AdminDashboardPage() {
       const data = await getMajors();
       setMajors(data || []);
     } catch (err) {
-      console.error('Error loading majors:', err);
+      // Error loading majors
     }
   };
 
@@ -184,12 +184,11 @@ export default function AdminDashboardPage() {
         if (!res.ok) throw new Error('Failed to fetch documents');
         data = await res.json();
       } catch (err) {
-        console.error('Error calling documents API:', err);
         data = [];
       }
       setDocuments(data || []);
     } catch (err) {
-      console.error('Error loading documents:', err);
+      // Error loading documents
     } finally {
       setLoading(false);
     }
@@ -206,7 +205,7 @@ export default function AdminDashboardPage() {
       const rejected = (all || []).filter((d: any) => d.status === 'REJECTED').length;
       setCounts({ total, pending, approved, rejected });
     } catch (err) {
-      console.error('Error loading counts:', err);
+      // Error loading counts
     }
   };
 
@@ -226,7 +225,6 @@ export default function AdminDashboardPage() {
       await loadCounts();
       loadDocuments();
     } catch (err: any) {
-      console.error('Error approving document:', err);
       toast.error(err.message || 'Có lỗi khi duyệt tài liệu');
     } finally {
       setApproving(null);
@@ -249,7 +247,6 @@ export default function AdminDashboardPage() {
       await loadCounts();
       loadDocuments();
     } catch (err: any) {
-      console.error('Error rejecting document:', err);
       toast.error(err.message || 'Có lỗi khi từ chối tài liệu');
     }
   };
@@ -279,7 +276,6 @@ export default function AdminDashboardPage() {
       await loadCounts();
       loadDocuments();
     } catch (err: any) {
-      console.error('Error saving document:', err);
       throw err;
     }
   };
@@ -300,7 +296,6 @@ export default function AdminDashboardPage() {
       await loadCounts();
       loadDocuments();
     } catch (err: any) {
-      console.error('Error deleting document:', err);
       toast.error(err.message || 'Có lỗi khi xoá tài liệu');
     }
   };
@@ -354,17 +349,6 @@ export default function AdminDashboardPage() {
   const filteredDocuments = documents.filter((doc) => {
     if (filter === 'all') return true;
     return doc.status === filter;
-  });
-
-  // Debug logs
-  console.log('🔍 Admin Dashboard Debug:', {
-    totalDocuments: documents.length,
-    filter,
-    filteredCount: filteredDocuments.length,
-    pending: documents.filter((d: any) => d.status === 'PENDING').length,
-    approved: documents.filter((d: any) => d.status === 'APPROVED').length,
-    rejected: documents.filter((d: any) => d.status === 'REJECTED').length,
-    sampleDoc: documents[0],
   });
 
   if (status === 'loading') return null;

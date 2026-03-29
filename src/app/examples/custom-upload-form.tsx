@@ -21,7 +21,6 @@ export function CustomUploadForm() {
     for (const file of Array.from(files)) {
       const result = await uploadFile(file);
       if (result) {
-        console.log('✅ Uploaded:', result);
         // You can now use result.file_id to store in database
         // Example: saveToDatabase(result.file_id, result.file_name);
       }
@@ -121,7 +120,6 @@ export function AdvancedUploadForm() {
     const result = await uploadFile(file, '-1001234567890'); // Custom chat ID
     if (result?.file_id) {
       // Save to database
-      console.log(`Image saved with file_id: ${result.file_id}`);
     }
   };
 

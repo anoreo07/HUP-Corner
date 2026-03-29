@@ -48,7 +48,7 @@ export default function UploadForm() {
           await fetch('/api/seed-majors', { method: 'POST' });
           data = await getMajors();
         } catch (seedErr) {
-          console.error('Error seeding majors:', seedErr);
+          // Error seeding majors
         }
       }
 
@@ -56,7 +56,7 @@ export default function UploadForm() {
       const filtered = (data || []).filter((m) => ALLOWED_MAJOR_CODES.includes(m.code));
       setMajors(filtered);
     } catch (err) {
-      console.error('Error loading majors:', err);
+      // Error loading majors
     }
   };
 
@@ -132,7 +132,6 @@ export default function UploadForm() {
 
       setIsSubmitted(true);
     } catch (err: any) {
-      console.error('Upload error:', err);
       setError(err.message || 'Có lỗi xảy ra khi upload');
     } finally {
       setLoading(false);

@@ -52,7 +52,6 @@ export function EditDocumentModal({
       onClose();
       toast.success('Cập nhật thành công!');
     } catch (error) {
-      console.error('Error saving document:', error);
       toast.error('Có lỗi khi cập nhật');
     } finally {
       setLoading(false);

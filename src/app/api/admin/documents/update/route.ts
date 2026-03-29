@@ -41,7 +41,6 @@ export async function POST(request: NextRequest) {
       message: 'Document updated successfully',
     });
   } catch (error) {
-    console.error('Error updating document:', error);
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Failed to update document' },
       { status: 500 }

@@ -26,7 +26,6 @@ export async function GET(req: NextRequest) {
       .order('created_at', { ascending: false });
 
     if (allError) {
-      console.error('❌ Error fetching all documents:', allError);
       return NextResponse.json(
         {
           error: 'Failed to fetch documents',
@@ -41,14 +40,6 @@ export async function GET(req: NextRequest) {
     const pending = (allDocs || []).filter((d: any) => d.status === 'PENDING');
     const approved = (allDocs || []).filter((d: any) => d.status === 'APPROVED');
     const rejected = (allDocs || []).filter((d: any) => d.status === 'REJECTED');
-
-    console.log('✅ Admin debug info:', {
-      totalDocs: allDocs?.length || 0,
-      pending: pending.length,
-      approved: approved.length,
-      rejected: rejected.length,
-      pendingDocs: pending.map((d: any) => ({ id: d.id, title: d.title })),
-    });
 
     return NextResponse.json({
       success: true,
@@ -65,7 +56,6 @@ export async function GET(req: NextRequest) {
         : '⚠️ No PENDING documents found',
     });
   } catch (err) {
-    console.error('❌ Debug error:', err);
     return NextResponse.json(
       {
         error: 'Internal Server Error',

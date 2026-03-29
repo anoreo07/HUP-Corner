@@ -54,7 +54,6 @@ export default function AvatarUpload({
         );
       },
       onUploadError: (error: Error) => {
-        console.error(error);
         toast.error(error.message);
       },
     }

@@ -54,11 +54,8 @@ export async function GET(req: NextRequest) {
       timestamp: new Date().toISOString(),
     };
 
-    console.log('🔍 DEBUG - Documents table info:', debugInfo);
-
     return NextResponse.json(debugInfo);
   } catch (err) {
-    console.error('❌ Debug error:', err);
     return NextResponse.json(
       {
         error: 'Internal Server Error',

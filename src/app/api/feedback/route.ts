@@ -50,7 +50,6 @@ async function sendEmail(subject: string, message: string) {
   const from = process.env.SMTP_FROM_EMAIL;
 
   if (!host || !user || !pass) {
-    console.log('[Feedback] SMTP not configured, skipping email');
     return false;
   }
 
@@ -86,10 +85,8 @@ async function sendEmail(subject: string, message: string) {
         </div>
       `,
     });
-    console.log('[Feedback] Email sent successfully');
     return true;
   } catch (err) {
-    console.error('[Feedback] Email send failed:', err);
     return false;
   }
 }
@@ -124,7 +121,6 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Feedback API error:', error);
     return NextResponse.json(
       { error: 'Có lỗi xảy ra. Vui lòng thử lại.' },
       { status: 500 }

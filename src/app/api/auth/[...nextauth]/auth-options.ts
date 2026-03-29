@@ -87,22 +87,18 @@ export const authOptions: NextAuthOptions = {
             .single();
 
           if (error) {
-            console.error('[nextauth][admin-password] supabase error:', error);
             return null;
           }
           if (!row) {
-            console.warn('[nextauth][admin-password] no admin_auth row found');
             return null;
           }
 
           const match = await bcrypt.compare(password, (row as any).password_hash);
-          console.log(`[nextauth][admin-password] password match: ${match}`);
           if (!match) return null;
 
           // mark user object so jwt callback can set role=admin
           return { id: (row as any).id, __isAdmin: true } as any;
         } catch (err) {
-          console.error('[nextauth][admin-password] authorize exception:', err);
           return null;
         }
       },

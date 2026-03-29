@@ -32,18 +32,15 @@ export async function POST(req: NextRequest) {
       .single();
 
     if (error) {
-      console.error('Database error:', error);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
     if (!data) {
-      console.error('No document found with the provided ID:', id);
       return NextResponse.json({ error: 'Document not found' }, { status: 404 });
     }
 
     return NextResponse.json(data);
   } catch (err) {
-    console.error('Unexpected error:', err);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
