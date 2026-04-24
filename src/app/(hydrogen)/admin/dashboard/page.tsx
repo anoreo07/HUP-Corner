@@ -33,7 +33,6 @@ const documentTypeLabels: Record<DocumentType, string> = {
 };
 
 const getFileIcon = (mimeType: string | null) => {
-  // Simplified: Just return colored text labels instead of icons
   if (!mimeType) return <span className="text-xs font-semibold text-gray-600">FILE</span>;
   
   if (mimeType.includes('pdf')) return <span className="text-xs font-semibold text-red-600">PDF</span>;
