@@ -170,7 +170,7 @@ export default function DocumentExplorer() {
                   <h3 className="font-bold text-on-surface text-lg">Bạn có tài liệu mới?</h3>
                   <p className="text-sm text-on-surface-variant mt-2 px-4 leading-relaxed">Đóng góp tài liệu để làm phong phú thêm kho tri thức HUP Corner.</p>
                 </div>
-                <button className="text-primary font-black text-xs uppercase tracking-[0.2em] group-hover:underline transition-all">Tải lên ngay</button>
+                <div className="text-primary font-black text-xs uppercase tracking-[0.2em] group-hover:underline transition-all">Tải lên ngay</div>
               </div>
             </Link>
           </motion.div>

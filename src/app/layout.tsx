@@ -30,6 +30,7 @@ export default async function RootLayout({
       // required this one for next-themes, remove it if you are not using next-theme
       suppressHydrationWarning
     >
+      <head />
       <body
         // to prevent any warning that is caused by third party extensions like Grammarly
         suppressHydrationWarning

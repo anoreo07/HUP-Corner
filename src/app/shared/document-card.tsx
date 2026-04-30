@@ -78,10 +78,10 @@ export function DocumentCard({ doc }: { doc: DocumentWithMajor }) {
           {doc.mime_type?.includes('pdf') ? 'PDF' : 'DOCX'} • {((doc.file_size || 0) / (1024 * 1024)).toFixed(1)} MB
         </span>
         <Link href={`/documents/${doc.id}`}>
-          <button className="bg-slate-50 text-primary px-5 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-primary hover:text-white transition-all flex items-center gap-2 group/btn shadow-sm active:scale-95">
+          <div className="bg-slate-50 text-primary px-5 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-primary hover:text-white transition-all flex items-center gap-2 group/btn shadow-sm active:scale-95">
             Chi tiết
             <ArrowRight size={14} className="transition-transform group-hover/btn:translate-x-1" />
-          </button>
+          </div>
         </Link>
       </div>
     </motion.div>
