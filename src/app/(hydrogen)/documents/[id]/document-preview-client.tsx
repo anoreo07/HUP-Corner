@@ -94,43 +94,18 @@ export default function DocumentPreviewClient({ document, relatedDocuments }: Do
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-6 mb-20 scale-[0.8] origin-top w-[125%] h-[125%] -translate-x-[10%]">
-      {/* Navigation Header */}
-      <div className="flex items-center justify-between mb-8 bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-100 shadow-sm">
-        <div className="flex items-center gap-5">
-          <Link href="/">
-            <div className="w-12 h-12 flex items-center justify-center rounded-full bg-slate-50 hover:bg-slate-100 transition-all text-primary active:scale-90 cursor-pointer">
-              <ArrowLeft size={24} />
-            </div>
-          </Link>
-          <div>
-            <h1 className="font-plus-jakarta text-xl font-bold tracking-tight text-on-surface line-clamp-1">{document.title}</h1>
-            <p suppressHydrationWarning className="text-[10px] text-outline font-bold uppercase tracking-widest mt-0.5">
-               Uploaded • {new Date(document.created_at).toLocaleDateString('vi-VN')}
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-3">
-          <button 
-            onClick={handleDownload}
-            disabled={downloading}
-            className="w-12 h-12 flex items-center justify-center rounded-full hover:bg-slate-50 transition-colors text-primary disabled:opacity-50"
-          >
-            <Download size={22} className={downloading ? 'animate-bounce' : ''} />
-          </button>
-          <button className="w-12 h-12 flex items-center justify-center rounded-full hover:bg-slate-50 transition-colors text-primary">
-            <Printer size={22} />
-          </button>
-          <button className="w-12 h-12 flex items-center justify-center rounded-full hover:bg-slate-50 transition-colors text-primary">
-            <MoreVertical size={22} />
-          </button>
-        </div>
-      </div>
+    <div className="max-w-7xl mx-auto px-4 py-8 mb-20">
+      <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-100 shadow-[0px_40px_100px_rgba(13,52,89,0.08)] overflow-hidden p-8 md:p-12">
+
+        <Link href="/" className="inline-flex items-center gap-2 text-slate-500 hover:text-primary transition-colors font-black text-[10px] uppercase tracking-widest mb-8">
+          <ArrowLeft size={16} />
+          Quay lại trang chủ
+        </Link>
 
       <div className="flex flex-col lg:flex-row gap-12 items-start">
         {/* Document View Area */}
         <div className="w-full lg:w-3/5 space-y-8">
-          <div className="relative bg-white dark:bg-slate-800 rounded-3xl shadow-[0px_20px_50px_rgba(13,52,89,0.1)] overflow-hidden group border border-slate-100/50 min-h-[700px] flex items-center justify-center">
+          <div className="relative bg-white dark:bg-slate-800 rounded-3xl shadow-[0px_20px_50px_rgba(13,52,89,0.1)] overflow-hidden group border border-slate-100/50 min-h-[850px] flex items-center justify-center">
             {loadingPreview && (
               <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-slate-50/80 backdrop-blur-sm">
                 <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4" />
@@ -143,7 +118,7 @@ export default function DocumentPreviewClient({ document, relatedDocuments }: Do
             >
               <iframe
                 src={getPreviewUrl()}
-                className="w-full h-[700px] border-none rounded-2xl bg-white"
+                className="w-full h-[850px] border-none rounded-2xl bg-white"
                 title={document.title}
                 onLoad={() => setLoadingPreview(false)}
               />
@@ -175,6 +150,18 @@ export default function DocumentPreviewClient({ document, relatedDocuments }: Do
               <InfoItem label="Môn học" value={document.subject_name || 'N/A'} />
               <InfoItem label="Năm học" value={document.academic_year || 'N/A'} />
               <InfoItem label="Dung lượng" value={document.file_size ? `${(document.file_size / (1024 * 1024)).toFixed(1)} MB` : 'N/A'} />
+            </div>
+
+            {/* Action Buttons */}
+            <div className="mt-12 pt-8 border-t border-slate-50">
+              <button 
+                onClick={handleDownload}
+                disabled={downloading}
+                className="w-full bg-primary text-white px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center justify-center gap-3 shadow-lg shadow-primary/20 hover:scale-[1.01] active:scale-95 transition-all disabled:opacity-50"
+              >
+                <Download size={18} className={downloading ? 'animate-bounce' : ''} />
+                {downloading ? 'Đang chuẩn bị...' : 'Tải xuống tài liệu ngay'}
+              </button>
             </div>
           </div>
         </div>
@@ -217,18 +204,8 @@ export default function DocumentPreviewClient({ document, relatedDocuments }: Do
             )}
           </div>
 
-          {/* Premium Action Card */}
-          <div className="bg-gradient-to-br from-[#3355c9] to-[#6e3bd8] rounded-[2.5rem] p-10 text-white relative overflow-hidden shadow-2xl">
-            <div className="relative z-10">
-              <h4 className="text-2xl font-black mb-3 font-plus-jakarta">Nâng cấp HUP Corner+</h4>
-              <p className="text-white/80 text-[13px] mb-8 leading-relaxed font-medium">Mở khóa quyền truy cập không giới hạn vào hơn 100,000 tài liệu chuyên ngành được tuyển chọn.</p>
-              <button className="w-full py-5 bg-white text-[#3355c9] font-black rounded-full hover:shadow-2xl transition-all transform hover:-translate-y-1 active:scale-95 text-[11px] uppercase tracking-[0.2em]">
-                Đăng ký ngay
-              </button>
-            </div>
-            <div className="absolute -bottom-20 -right-20 w-60 h-60 bg-white/10 rounded-full blur-3xl" />
-          </div>
         </aside>
+      </div>
       </div>
     </div>
   );

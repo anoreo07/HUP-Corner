@@ -31,16 +31,16 @@ export default function Header({ className }: { className?: string }) {
 
       <div className="flex items-center gap-3">
         <button 
-          onClick={openModal}
+          onClick={() => {
+            console.log('Upload button clicked');
+            openModal();
+          }}
           className="bg-gradient-to-br from-blue-600 to-indigo-400 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:scale-105 active:scale-95 transition-all flex items-center gap-2"
         >
           <span className="material-symbols-outlined text-sm">upload</span>
           <span>Upload</span>
         </button>
         <HeaderUploadProgress />
-        <button className="p-2 text-slate-500 hover:bg-surface-container-high rounded-full transition-all">
-          <span className="material-symbols-outlined">settings</span>
-        </button>
         <button className="sm:hidden p-2 text-slate-500 hover:bg-surface-container-high rounded-full transition-all">
           <span className="material-symbols-outlined">search</span>
         </button>

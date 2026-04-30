@@ -26,6 +26,7 @@ interface UploadModalProps {
 }
 
 export default function UploadModal({ isOpen, onClose }: UploadModalProps) {
+  console.log('UploadModal isOpen:', isOpen);
   const [localStatus, setLocalStatus] = useState<UploadStatus | null>(null);
   const { uploads, uploadFile } = useFileUploader();
   const { setUploads } = useGlobalUploads();

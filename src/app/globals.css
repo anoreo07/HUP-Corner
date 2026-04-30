@@ -8,161 +8,151 @@
 @layer base {
   /* default theme */
   :root {
-    /*
-      - gray/natural colors for texts, borders and disabled elements.
-      - If required we can use as background too.
-    */
-    /* For rgb(255 255 255 / <alpha-value>) = #ffffff */
+    --background: 248 249 255;
+    --foreground: 13 52 89;
+    --muted: 241 241 241;
+    --muted-foreground: 146 146 146;
+
+    --primary-lighter: 175 190 255;
+    --primary-default: 51 85 201;
+    --primary-dark: 35 72 188;
+    --primary-foreground: 255 255 255;
+
     --gray-0: 255 255 255;
-    /* For rgb(250 250 250 / <alpha-value>) = #fafafa */
     --gray-50: 250 250 250;
-    /* For rgb(241 241 241 / <alpha-value>) = #f1f1f1 */
     --gray-100: 241 241 241;
-    /* For rgb(227 227 227 / <alpha-value>) = #e3e3e3 */
     --gray-200: 227 227 227;
-    /* For rgb(223 223 223 / <alpha-value>) = #dfdfdf */
     --gray-300: 223 223 223;
-    /* For rgb(146 146 146 / <alpha-value>) = #929292 */
     --gray-400: 146 146 146;
-    /* For rgb(102 102 102 / <alpha-value>) = #666666 */
     --gray-500: 102 102 102;
-    /* For rgb(72 72 72 / <alpha-value>) = #484848 */
     --gray-600: 72 72 72;
-    /* For rgb(51 51 51 / <alpha-value>) = #333333 */
     --gray-700: 51 51 51;
-    /* For rgb(34 34 34 / <alpha-value>) = #222222 */
     --gray-800: 34 34 34;
-    /* For rgb(17 17 17 / <alpha-value>) = #111111 */
     --gray-900: 17 17 17;
-    /* For rgb(0 0 0 / <alpha-value>) = #000000 */
     --gray-1000: 0 0 0;
 
-    /* body style */
-    --background: 255 255 255; /* #ffffff */
-    --foreground: 72 72 72; /* #484848 */
-    --muted: 227 227 227; /* #e3e3e3 */
-    --muted-foreground: 146 146 146; /* #929292 */
-
-    /* ----------------------------------- */
-    /* primary/brand colors */
-    /* ----------------------------------- */
-    --primary-lighter: 227 227 227; /* #e3e3e3 */
-    --primary-default: 17 17 17; /* #111111 */
-    --primary-dark: 0 0 0; /* #000000 */
-    --primary-foreground: 255 255 255; /* #ffffff */
-
-    /* ----------------------------------- */
-    /* secondary colors */
-    /* ----------------------------------- */
-    --secondary-lighter: 221 227 255; /* #dde3ff */
-    --secondary-default: 78 54 245; /* #4e36f5 */
-    --secondary-dark: 67 42 216; /* #432ad8 */
-    --secondary-foreground: 255 255 255; /* #ffffff */
-
-    /* ----------------------------------- */
-    /* red/error colors */
-    /* ----------------------------------- */
-    --red-lighter: 247 212 214; /* #f7d4d6 */
-    --red-default: 238 0 0; /* #e00 */
-    --red-dark: 197 0 0; /* #c50000 */
-
-    /* ----------------------------------- */
-    /* orange/warning colors */
-    /* ----------------------------------- */
-    --orange-lighter: 255 239 207; /* #ffefcf */
-    --orange-default: 245 166 35; /* #f5a623 */
-    --orange-dark: 171 87 10; /* #ab570a */
-
-    /* ----------------------------------- */
-    /* blue/info colors */
-    /* ----------------------------------- */
-    --blue-lighter: 211 229 255; /* #d3e5ff */
-    --blue-default: 0 112 243; /* #0070f3 */
-    --blue-dark: 7 97 209; /* #0761d1 */
-
-    /* ----------------------------------- */
-    /* green/success colors */
-    /* ----------------------------------- */
-    --green-lighter: 185 249 207; /* #b9f9cf */
-    --green-default: 17 168 73; /* #11a849 */
-    --green-dark: 17 132 60; /* #11843c */
+    /* Surface Colors - Light */
+    --surface-bright: 248 249 255;
+    --on-primary-fixed-variant: 10 56 174;
+    --surface-container-high: 220 233 255;
+    --error-dim: 119 3 38;
+    --surface-container-lowest: 255 255 255;
+    --secondary-fixed-dim: 221 205 255;
+    --on-surface-variant: 65 97 136;
+    --surface-container-low: 239 244 255;
+    --inverse-primary: 106 137 255;
+    --inverse-surface: 0 15 33;
+    --on-surface: 13 52 89;
+    --error-container: 247 106 128;
+    --secondary-dim: 98 43 203;
+    --on-tertiary-fixed-variant: 0 101 68;
+    --on-tertiary-fixed: 0 69 45;
+    --secondary-fixed: 233 221 255;
+    --on-primary-fixed: 0 31 110;
+    --on-background: 13 52 89;
+    --on-secondary-fixed: 77 0 183;
+    --primary-container: 175 190 255;
+    --on-tertiary: 230 255 238;
+    --on-error-container: 104 0 31;
+    --tertiary-fixed-dim: 88 231 171;
+    --surface-dim: 196 220 255;
+    --tertiary-dim: 0 95 64;
+    --on-secondary-container: 96 41 201;
+    --outline: 93 125 166;
+    --on-tertiary-container: 0 90 60;
+    --tertiary: 0 109 74;
+    --on-primary-container: 0 48 158;
+    --surface-variant: 210 228 255;
+    --surface-container-highest: 210 228 255;
+    --on-error: 255 247 247;
+    --outline-variant: 148 180 224;
+    --tertiary-fixed: 105 246 184;
+    --surface: 248 249 255;
+    --on-primary: 250 248 255;
+    --tertiary-container: 105 246 184;
+    --surface-tint: 51 85 201;
+    --primary-dim: 35 72 188;
+    --secondary-container: 233 221 255;
+    --on-secondary-fixed-variant: 106 55 212;
+    --on-secondary: 253 247 255;
+    --primary-fixed: 175 190 255;
+    --surface-container: 229 238 255;
+    --primary-fixed-dim: 157 175 255;
+    --inverse-on-surface: 142 158 183;
   }
 
-  /* dark theme */
   [data-theme='dark'] {
-    /*
-      - gray/natural color shades for texts, borders and disabled elements.
-      - If required we can use as background too.
-    */
-    /* For rgb(0 0 0 / <alpha-value>) = #000000  */
-    --gray-0: 0 0 0;
-    /* For rgb(17 17 17 / <alpha-value>) = #111111 */
-    --gray-50: 17 17 17;
-    /* For rgb(31 31 31 / <alpha-value>) = #1f1f1f */
-    --gray-100: 31 31 31;
-    /* For rgb(51 51 51 / <alpha-value>) = #333333 */
-    --gray-200: 51 51 51;
-    /* For rgb(72 72 72 / <alpha-value>) = #484848 */
-    --gray-300: 72 72 72;
-    /* For rgb(102 102 102 / <alpha-value>) = #666666 */
-    --gray-400: 102 102 102;
-    /* For rgb(146 146 146 / <alpha-value>) = #929292 */
-    --gray-500: 146 146 146;
-    /* For rgb(162 162 162 / <alpha-value>) = #a2a2a2 */
-    --gray-600: 162 162 162;
-    /* For rgb(223 223 223 / <alpha-value>) = #dfdfdf */
-    --gray-700: 223 223 223;
-    /* For rgb(226 226 226 / <alpha-value>) = #e2e2e2 */
-    --gray-800: 226 226 226;
-    /* For rgb(241 241 241 / <alpha-value>) = #f1f1f1 */
-    --gray-900: 241 241 241;
-    /* For rgb(255 255 255 / <alpha-value>) = #ffffff */
+    --background: 2 6 23;
+    --foreground: 241 245 249;
+    --muted: 30 41 59;
+    --muted-foreground: 148 163 184;
+
+    --primary-lighter: 30 41 59;
+    --primary-default: 51 102 255;
+    --primary-dark: 37 99 235;
+    --primary-foreground: 255 255 255;
+
+    --gray-0: 2 6 23;
+    --gray-50: 15 23 42;
+    --gray-100: 30 41 59;
+    --gray-200: 51 65 85;
+    --gray-300: 71 85 105;
+    --gray-400: 100 116 139;
+    --gray-500: 148 163 184;
+    --gray-600: 203 213 225;
+    --gray-700: 226 232 240;
+    --gray-800: 241 245 249;
+    --gray-900: 248 250 252;
     --gray-1000: 255 255 255;
 
-    --background: 8 9 14; /* #08090e */
-    --foreground: 223 223 223; /* #dfdfdf */
-    --muted: 51 51 51; /* #333333 */
-    --muted-foreground: 102 102 102; /* #666666 */
-
-    /* ----------------------------------- */
-    /* primary/brand colors */
-    /* ----------------------------------- */
-    --primary-lighter: 34 34 34; /* #222222 */
-    --primary-default: 241 241 241; /* #f1f1f1 */
-    --primary-dark: 255 255 255; /* #ffffff */
-    --primary-foreground: 0 0 0; /* #000000 */
-
-    /* ----------------------------------- */
-    /* secondary colors */
-    /* ----------------------------------- */
-    --secondary-lighter: 31 22 90; /* #1f165a */
-    --secondary-dark: 193 203 255; /* #c1cbff */
-
-    /* ----------------------------------- */
-    /* red/error colors */
-    /* ----------------------------------- */
-    --red-lighter: 80 0 0; /* #500000 */
-    --red-dark: 255 193 193; /* #ffc1c1 */
-
-    /* ----------------------------------- */
-    /* orange/warning colors */
-    /* ----------------------------------- */
-    --orange-lighter: 68 29 4; /* #441d04 */
-    --orange-dark: 252 234 139; /* #fcea8b */
-
-    /* ----------------------------------- */
-    /* blue/info colors */
-    /* ----------------------------------- */
-    --blue-lighter: 13 51 94; /* #0d335e */
-    --blue-dark: 181 233 255; /* #b5e9ff */
-
-    /* ----------------------------------- */
-    /* green/success colors */
-    /* ----------------------------------- */
-    --green-lighter: 3 48 22; /* #033016 */
-    --green-dark: 185 249 207; /* #b9f9cf */
-
-    /* here you can customize other colors for dark theme if design required */
+    /* Surface Colors - Dark */
+    --surface-bright: 15 23 42;
+    --on-primary-fixed-variant: 157 175 255;
+    --surface-container-high: 30 41 59;
+    --error-dim: 247 106 128;
+    --surface-container-lowest: 2 6 23;
+    --secondary-fixed-dim: 221 205 255;
+    --on-surface-variant: 148 163 184;
+    --surface-container-low: 2 6 23;
+    --inverse-primary: 51 85 201;
+    --inverse-surface: 241 245 249;
+    --on-surface: 241 245 249;
+    --error-container: 119 3 38;
+    --secondary-dim: 157 175 255;
+    --on-tertiary-fixed-variant: 88 231 171;
+    --on-tertiary-fixed: 230 255 238;
+    --secondary-fixed: 51 65 85;
+    --on-primary-fixed: 250 248 255;
+    --on-background: 241 245 249;
+    --on-secondary-fixed: 253 247 255;
+    --primary-container: 30 41 59;
+    --on-tertiary: 0 31 110;
+    --on-error-container: 255 247 247;
+    --tertiary-fixed-dim: 88 231 171;
+    --surface-dim: 2 6 23;
+    --tertiary-dim: 88 231 171;
+    --on-secondary-container: 221 205 255;
+    --outline: 51 65 85;
+    --on-tertiary-container: 230 255 238;
+    --tertiary: 88 231 171;
+    --on-primary-container: 175 190 255;
+    --surface-variant: 30 41 59;
+    --surface-container-highest: 30 41 59;
+    --on-error: 119 3 38;
+    --outline-variant: 30 41 59;
+    --tertiary-fixed: 30 41 59;
+    --surface: 15 23 42;
+    --on-primary: 15 23 42;
+    --tertiary-container: 30 41 59;
+    --surface-tint: 51 102 255;
+    --primary-dim: 51 102 255;
+    --secondary-container: 30 41 59;
+    --on-secondary-fixed-variant: 221 205 255;
+    --on-secondary: 15 23 42;
+    --primary-fixed: 30 41 59;
+    --surface-container: 15 23 42;
+    --primary-fixed-dim: 30 41 59;
+    --inverse-on-surface: 30 41 59;
   }
 
   .rizzui-select-options {

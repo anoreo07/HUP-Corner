@@ -68,12 +68,12 @@ export default function Footer({ className }: { className?: string }) {
               </Link>
             </li>
             <li>
-              <Link href="#" className="hover:text-primary transition-all">
+              <Link href="/terms" className="hover:text-primary transition-all">
                 Điều khoản dịch vụ
               </Link>
             </li>
             <li>
-              <Link href="#" className="hover:text-primary transition-all">
+              <Link href="/privacy" className="hover:text-primary transition-all">
                 Chính sách bảo mật
               </Link>
             </li>
@@ -86,7 +86,7 @@ export default function Footer({ className }: { className?: string }) {
           </h4>
           <ul className="space-y-4 text-sm text-slate-500">
             <li>
-              <Link href="/upload" className="hover:text-primary transition-all">
+              <Link href="/upload-guide" className="hover:text-primary transition-all">
                 Hướng dẫn tải lên
               </Link>
             </li>

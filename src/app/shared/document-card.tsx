@@ -40,11 +40,7 @@ export function InfoRow({ icon, text }: { icon: React.ReactNode, text: string })
 
 export function DocumentCard({ doc }: { doc: DocumentWithMajor }) {
   return (
-    <motion.div 
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, scale: 0.95 }}
-      whileHover={{ y: -5 }}
+    <div 
       className="group bg-white dark:bg-slate-900 rounded-[2rem] p-7 shadow-[0px_10px_40px_rgba(13,52,89,0.04)] border border-slate-100/50 hover:shadow-[0px_20px_60px_rgba(13,52,89,0.08)] transition-all flex flex-col justify-between min-h-[340px]"
     >
       <div>
@@ -65,14 +61,14 @@ export function DocumentCard({ doc }: { doc: DocumentWithMajor }) {
             {doc.title}
           </h2>
         </Link>
-
+ 
         <div className="space-y-3.5">
           <InfoRow icon={<BookOpen size={16} />} text={doc.majors?.name || 'Học thuật'} />
           <InfoRow icon={<FlaskConical size={16} />} text={doc.subject_name || 'Đang cập nhật'} />
           <InfoRow icon={<Clock size={16} />} text={doc.academic_year || 'Năm học'} />
         </div>
       </div>
-
+ 
       <div className="mt-8 pt-6 border-t-[5px] border-slate-50 flex justify-between items-center">
         <span className="text-[9px] font-black text-outline-variant uppercase tracking-widest opacity-60">
           {doc.mime_type?.includes('pdf') ? 'PDF' : 'DOCX'} • {((doc.file_size || 0) / (1024 * 1024)).toFixed(1)} MB
@@ -84,6 +80,6 @@ export function DocumentCard({ doc }: { doc: DocumentWithMajor }) {
           </div>
         </Link>
       </div>
-    </motion.div>
+    </div>
   );
 }
