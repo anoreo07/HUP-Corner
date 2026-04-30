@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useMemo } from 'react';
 import { uploadFileWithChunking, calculateChunks, needsChunking } from '@/utils/file-chunking';
+import { useGlobalUploads } from './use-global-uploads';
 
 export interface UseFileUploaderOptions {
   maxSize?: number; // bytes
@@ -58,7 +59,7 @@ const EXTENSION_TO_MIME_TYPE: Record<string, string> = {
 };
 
 export function useFileUploader(options: UseFileUploaderOptions = {}) {
-  const [uploads, setUploads] = useState<FileUploadState[]>([]);
+  const { uploads, setUploads } = useGlobalUploads();
   const opts = useMemo(() => ({ ...DEFAULT_OPTIONS, ...options }), [options]);
 
   const validateFile = useCallback(
@@ -197,16 +198,16 @@ export function useFileUploader(options: UseFileUploaderOptions = {}) {
         return null;
       }
     },
-    [validateFile, uploads.length]
+    [validateFile, setUploads, uploads.length]
   );
 
   const clearUploads = useCallback(() => {
     setUploads([]);
-  }, []);
+  }, [setUploads]);
 
   const removeUpload = useCallback((index: number) => {
     setUploads((prev) => prev.filter((_, i) => i !== index));
-  }, []);
+  }, [setUploads]);
 
   return {
     uploads,

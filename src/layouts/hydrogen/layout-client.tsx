@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { GuideDrawer } from '@/app/shared/guide-drawer';
 import { usePathname } from 'next/navigation';
+import UploadModal from '@/components/upload-modal';
+import { useUploadModal } from '@/hooks/use-upload-modal';
 
 interface HydrogenLayoutClientProps {
   children: React.ReactNode;
@@ -29,10 +31,13 @@ export default function HydrogenLayoutClient({ children }: HydrogenLayoutClientP
     return () => window.removeEventListener('hashchange', handleAnchorClick);
   }, []);
 
+  const { isOpen: isUploadOpen, closeModal: closeUploadModal } = useUploadModal();
+
   return (
     <>
       {children}
       <GuideDrawer isOpen={isGuideOpen} onClose={() => setIsGuideOpen(false)} />
+      <UploadModal isOpen={isUploadOpen} onClose={closeUploadModal} />
     </>
   );
 }

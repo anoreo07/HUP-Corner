@@ -10,6 +10,8 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const fileId = searchParams.get('fileId');
     const fileName = searchParams.get('fileName') || 'download';
+    const preview = searchParams.get('preview') === 'true';
+    const mimeType = searchParams.get('mimeType') || 'application/octet-stream';
 
     if (!fileId) {
       return NextResponse.json(
@@ -21,10 +23,15 @@ export async function GET(request: NextRequest) {
     // Download file — auto-reassembles chunks if needed
     const { buffer } = await downloadFileAuto(fileId);
 
-    // Return file as download
+    // Return file as download or inline preview
     const headers = new Headers();
-    headers.set('Content-Disposition', `attachment; filename="${encodeURIComponent(fileName)}"`);
-    headers.set('Content-Type', 'application/octet-stream');
+    if (preview) {
+      headers.set('Content-Disposition', 'inline');
+    } else {
+      headers.set('Content-Disposition', `attachment; filename="${encodeURIComponent(fileName)}"`);
+    }
+    headers.set('Content-Type', mimeType);
+    headers.set('X-Content-Type-Options', 'nosniff');
     headers.set('Content-Length', buffer.length.toString());
 
     return new NextResponse(buffer, {

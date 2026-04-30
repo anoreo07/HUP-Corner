@@ -19,7 +19,7 @@ export default function SearchTrigger({
     <button
       aria-label="Search"
       className={cn(
-        'group inline-flex items-center focus:outline-none active:translate-y-px xl:h-10 xl:w-full xl:max-w-sm xl:rounded-lg xl:border xl:border-muted xl:py-2 xl:pe-2 xl:ps-3.5 xl:shadow-sm xl:backdrop-blur-md xl:transition-colors xl:duration-200 xl:hover:border-gray-900 xl:hover:outline-double xl:hover:outline-[0.5px] xl:hover:outline-gray-900 xl:focus-visible:border-gray-900 xl:focus-visible:outline-double xl:focus-visible:outline-[0.5px] xl:focus-visible:outline-gray-900',
+        'group inline-flex items-center focus:outline-none active:scale-95 h-9 w-full max-w-[280px] rounded-full bg-slate-100/50 border border-transparent py-1.5 pe-2 ps-3.5 transition-all duration-200 hover:bg-white hover:border-slate-200 hover:shadow-sm',
         className
       )}
       {...props}
@@ -27,18 +27,18 @@ export default function SearchTrigger({
       {icon ? (
         icon
       ) : (
-        <PiMagnifyingGlassBold className="magnifying-glass me-2 h-[18px] w-[18px]" />
+        <PiMagnifyingGlassBold className="me-2 h-4 w-4 text-slate-500" />
       )}
       <span
         className={cn(
-          'placeholder-text hidden text-sm text-gray-600 group-hover:text-gray-900 xl:inline-flex',
+          'hidden text-[13px] font-medium text-slate-500 group-hover:text-slate-900 sm:inline-flex',
           placeholderClassName
         )}
       >
         Tìm kiếm tài liệu...
       </span>
-      <span className="search-command ms-auto hidden items-center text-sm text-gray-600 lg:flex lg:rounded-md lg:bg-primary lg:px-1.5 lg:py-1 lg:text-xs lg:font-semibold lg:text-primary-foreground xl:justify-normal">
-        <PiCommand strokeWidth={1.3} className="h-[15px] w-[15px]" />K
+      <span className="ms-auto hidden items-center gap-0.5 text-[10px] text-slate-400 font-bold border border-slate-200 px-1.5 py-0.5 rounded-md lg:flex">
+        <PiCommand size={12} />K
       </span>
     </button>
   );

@@ -259,3 +259,85 @@ export async function getOtherDocumentsPaginated(
     totalPages: 0,
   };
 }
+
+// --- Site Reviews (Feedback) ---
+export async function getSiteReviews() {
+  const { data, error } = await supabase
+    .from('site_reviews')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) throw error;
+  return data;
+}
+
+export async function submitSiteReview(review: {
+  rating: number;
+  title: string;
+  content: string;
+  user_name?: string;
+  is_anonymous: boolean;
+  ip_address: string;
+}) {
+  // 1. Kiểm tra giới hạn 1 giờ dựa trên IP
+  const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+  
+  const { count, error: countError } = await supabase
+    .from('site_reviews')
+    .select('*', { count: 'exact', head: true })
+    .eq('ip_address', review.ip_address)
+    .gt('created_at', oneHourAgo);
+
+  if (countError) throw countError;
+  
+  if (count && count > 0) {
+    throw new Error('Bạn chỉ có thể gửi đánh giá 1 lần mỗi giờ. Vui lòng quay lại sau.');
+  }
+
+  // 2. Thực hiện insert
+  const { data, error } = await supabase
+    .from('site_reviews')
+    .insert([review])
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
+export async function getDocumentById(id: string): Promise<DocumentWithMajor | null> {
+  if (typeof window === 'undefined') {
+    const { getSupabaseAdmin } = await import('./supabaseAdmin');
+    const supabaseAdmin = getSupabaseAdmin();
+    const { data, error } = await supabaseAdmin
+      .from('documents')
+      .select('*, majors(*)')
+      .eq('id', id)
+      .single();
+
+    if (error) return null;
+    return data as DocumentWithMajor;
+  }
+
+  const { data, error } = await supabase
+    .from('documents')
+    .select('*, majors(*)')
+    .eq('id', id)
+    .single();
+
+  if (error) return null;
+  return data as DocumentWithMajor;
+}
+
+export async function getRelatedDocuments(document: DocumentWithMajor, limit: number = 3): Promise<DocumentWithMajor[]> {
+  const { data, error } = await supabase
+    .from('documents')
+    .select('*, majors(*)')
+    .eq('status', 'APPROVED')
+    .eq('major_id', document.major_id)
+    .neq('id', document.id)
+    .limit(limit);
+
+  if (error) return [];
+  return (data || []) as DocumentWithMajor[];
+}

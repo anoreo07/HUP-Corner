@@ -6,7 +6,7 @@ import GlobalDrawer from '@/app/shared/drawer-views/container';
 import GlobalModal from '@/app/shared/modal-views/container';
 import { JotaiProvider, ThemeProvider } from '@/app/shared/theme-provider';
 import { siteConfig, metaObject } from '@/config/site.config';
-import { inter, lexendDeca } from '@/app/fonts';
+import { inter, lexendDeca, plusJakartaSans } from '@/app/fonts';
 import cn from '@core/utils/class-names';
 import NextProgress from '@core/components/next-progress';
 
@@ -33,7 +33,7 @@ export default async function RootLayout({
       <body
         // to prevent any warning that is caused by third party extensions like Grammarly
         suppressHydrationWarning
-        className={cn(inter.variable, lexendDeca.variable, 'font-inter')}
+        className={cn(inter.variable, lexendDeca.variable, plusJakartaSans.variable, 'font-inter')}
       >
         <AuthProvider session={session}>
           <ThemeProvider>

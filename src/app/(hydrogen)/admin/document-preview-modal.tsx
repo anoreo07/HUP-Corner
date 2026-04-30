@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Modal, Button, Loader } from 'rizzui';
 import { PiDownloadSimpleBold, PiXBold } from 'react-icons/pi';
+import Image from 'next/image';
 
 interface DocumentPreviewModalProps {
   isOpen: boolean;
@@ -111,13 +112,15 @@ export function DocumentPreviewModal({
               )}
 
               {isImage && (
-                <div className="flex items-center justify-center h-full p-4 bg-gray-100">
-                  <img
+                <div className="flex items-center justify-center h-full p-4 bg-gray-100 relative">
+                  <Image
                     src={documentUrl}
                     alt={documentName}
-                    style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain' }}
+                    fill
+                    className="object-contain"
                     onLoad={handleLoad}
                     onError={handleError}
+                    unoptimized
                   />
                 </div>
               )}

@@ -15,7 +15,6 @@ import {
   PiMagnifyingGlassBold,
 } from 'react-icons/pi';
 import { DocumentWithMajor, DocumentType } from '@/types/database';
-import DocumentDetailModal from '@/app/shared/document-detail-modal';
 
 const documentTypeLabels: Record<DocumentType, string> = {
   EXAM: 'Đề thi',
@@ -94,7 +93,8 @@ export default function SearchList({ onClose }: { onClose?: () => void }) {
   }, [searchText, searchDocuments]);
 
   const handleDocumentClick = (doc: DocumentWithMajor) => {
-    setSelectedDocument(doc);
+    onClose?.();
+    router.push(`/documents/${doc.id}`);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -207,14 +207,6 @@ export default function SearchList({ onClose }: { onClose?: () => void }) {
         )}
       </div>
 
-      {/* Document Detail Modal */}
-      {selectedDocument && (
-        <DocumentDetailModal
-          document={selectedDocument}
-          isOpen={!!selectedDocument}
-          onClose={() => setSelectedDocument(null)}
-        />
-      )}
     </>
   );
 }

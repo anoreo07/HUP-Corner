@@ -8,8 +8,8 @@ enum MODE {
 }
 
 export const siteConfig = {
-  title: 'HUP Corner - Chia sẻ tài liệu HUP',
-  description: `HUP Corner là góc nhỏ dành cho sinh viên HUP – nơi tổng hợp tài liệu, tips học tập, và chia sẻ kinh nghiệm từ chính sinh viên. Học chung, chia sẻ chung, cùng nhau tiến bộ!`,
+  title: 'HUP Corner - Kho tài liệu học thuật số 1 HUP',
+  description: 'Nơi chia sẻ và lưu trữ tài liệu học tập dành riêng cho sinh viên HUP.',
   // update this to your real production URL when available
   siteUrl: 'https://hupcorner.vercel.app',
   keywords: ['HUP', 'tài liệu HUP', 'sinh viên HUP', 'HUP Corner', 'học tập HUP', 'đề cương HUP', 'slide bài giảng HUP', 'bài tập HUP', 'đề thi HUP'],
@@ -39,6 +39,17 @@ export const metaObject = (
       images: `${siteConfig.siteUrl}/opengraph-image.png`,
       locale: 'en_US',
       type: 'website',
+    },
+    icons: {
+      icon: siteConfig.icon,
+      apple: siteConfig.logo,
+      shortcut: siteConfig.logo,
+      other: [
+        {
+          rel: 'stylesheet',
+          url: 'https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap',
+        },
+      ],
     },
   };
 };
