@@ -1,14 +1,9 @@
-import { Toaster } from 'react-hot-toast';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/auth-options';
-import AuthProvider from '@/app/api/auth/[...nextauth]/auth-provider';
-import GlobalDrawer from '@/app/shared/drawer-views/container';
-import GlobalModal from '@/app/shared/modal-views/container';
-import { JotaiProvider, ThemeProvider } from '@/app/shared/theme-provider';
 import { siteConfig, metaObject } from '@/config/site.config';
 import { inter, lexendDeca, plusJakartaSans } from '@/app/fonts';
 import cn from '@core/utils/class-names';
-import NextProgress from '@core/components/next-progress';
+import { Providers } from '@/app/providers';
 
 // styles
 import 'swiper/css';
@@ -30,23 +25,10 @@ export default async function RootLayout({
       // required this one for next-themes, remove it if you are not using next-theme
       suppressHydrationWarning
     >
-      <head />
       <body
-        // to prevent any warning that is caused by third party extensions like Grammarly
-        suppressHydrationWarning
         className={cn(inter.variable, lexendDeca.variable, plusJakartaSans.variable, 'font-inter')}
       >
-        <AuthProvider session={session}>
-          <ThemeProvider>
-            <NextProgress />
-            <JotaiProvider>
-              {children}
-              <Toaster />
-              <GlobalDrawer />
-              <GlobalModal />
-            </JotaiProvider>
-          </ThemeProvider>
-        </AuthProvider>
+        <Providers session={session}>{children}</Providers>
       </body>
     </html>
   );

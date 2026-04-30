@@ -70,15 +70,15 @@ export default async function HomePage() {
           </h1>
           <p className="text-slate-600 max-w-lg leading-relaxed">
             Khám phá kho lưu trữ học thuật khổng lồ từ các giảng viên và sinh
-            viên hàng đầu. Atelier là không gian để bạn nghiên cứu và sẻ chia
+            viên hàng đầu. HUP Corner là không gian để bạn nghiên cứu và sẻ chia
             tri thức.
           </p>
           <div className="flex flex-wrap gap-4">
             <Link href="/all-majors">
-              <button className="bg-primary text-white px-8 py-4 rounded-full font-bold shadow-lg hover:shadow-primary/30 transition-all flex items-center gap-2">
+              <div className="bg-primary text-white px-8 py-4 rounded-full font-bold shadow-lg hover:shadow-primary/30 transition-all flex items-center gap-2 cursor-pointer active:scale-95">
                 Bắt đầu khám phá
                 <span className="material-symbols-outlined">arrow_forward</span>
-              </button>
+              </div>
             </Link>
             <div className="flex -space-x-3 items-center">
               {[1, 2, 3].map((i) => (
