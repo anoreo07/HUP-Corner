@@ -25,7 +25,15 @@ export default async function RootLayout({
       // required this one for next-themes, remove it if you are not using next-theme
       suppressHydrationWarning
     >
+      <head>
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        />
+      </head>
       <body
+        // to prevent any warning that is caused by third party extensions like Grammarly
+        suppressHydrationWarning
         className={cn(inter.variable, lexendDeca.variable, plusJakartaSans.variable, 'font-inter')}
       >
         <Providers session={session}>{children}</Providers>

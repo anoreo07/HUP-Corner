@@ -44,12 +44,6 @@ export const metaObject = (
       icon: siteConfig.icon,
       apple: siteConfig.logo,
       shortcut: siteConfig.logo,
-      other: [
-        {
-          rel: 'stylesheet',
-          url: 'https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap',
-        },
-      ],
     },
   };
 };

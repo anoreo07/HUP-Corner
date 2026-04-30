@@ -99,9 +99,9 @@ export default function DocumentPreviewClient({ document, relatedDocuments }: Do
       <div className="flex items-center justify-between mb-8 bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-100 shadow-sm">
         <div className="flex items-center gap-5">
           <Link href="/">
-            <button className="w-12 h-12 flex items-center justify-center rounded-full bg-slate-50 hover:bg-slate-100 transition-all text-primary active:scale-90">
+            <div className="w-12 h-12 flex items-center justify-center rounded-full bg-slate-50 hover:bg-slate-100 transition-all text-primary active:scale-90 cursor-pointer">
               <ArrowLeft size={24} />
-            </button>
+            </div>
           </Link>
           <div>
             <h1 className="font-plus-jakarta text-xl font-bold tracking-tight text-on-surface line-clamp-1">{document.title}</h1>

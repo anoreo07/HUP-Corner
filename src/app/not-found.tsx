@@ -35,16 +35,11 @@ export default function NotFound() {
             <br className="hidden sm:inline-block" />
             mailing list or follow us on Facebook for get latest update.
           </p>
-          <Link href={'/'}>
-            <Button
-              as="span"
-              size="xl"
-              color="primary"
-              className="mt-8 h-12 px-4 xl:h-14 xl:px-6"
-            >
+          <Link href="/">
+            <div className="mt-8 flex h-12 items-center justify-center rounded-lg bg-primary px-4 font-bold text-white transition-all hover:bg-primary/90 xl:h-14 xl:px-6 cursor-pointer">
               <PiHouseLineBold className="mr-1.5 text-lg" />
               Back to home
-            </Button>
+            </div>
           </Link>
         </div>
       </div>
