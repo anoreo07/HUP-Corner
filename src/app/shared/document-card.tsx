@@ -7,8 +7,11 @@ import {
   ArrowRight,
   BookOpen,
   Clock,
-  FlaskConical
+  FlaskConical,
+  Eye,
+  Download
 } from 'lucide-react';
+
 import { motion } from 'framer-motion';
 import { DocumentWithMajor, DocumentType } from '@/types/database';
 import cn from '@core/utils/class-names';
@@ -65,14 +68,28 @@ export function DocumentCard({ doc }: { doc: DocumentWithMajor }) {
         <div className="space-y-3.5">
           <InfoRow icon={<BookOpen size={16} />} text={doc.majors?.name || 'Học thuật'} />
           <InfoRow icon={<FlaskConical size={16} />} text={doc.subject_name || 'Đang cập nhật'} />
-          <InfoRow icon={<Clock size={16} />} text={doc.academic_year || 'Năm học'} />
+          <InfoRow icon={<Clock size={16} />} text={doc.academic_year ? `Năm học ${doc.academic_year}` : 'Năm học: Đang cập nhật'} />
+
         </div>
       </div>
  
       <div className="mt-8 pt-6 border-t-[5px] border-slate-50 flex justify-between items-center">
-        <span className="text-[9px] font-black text-outline-variant uppercase tracking-widest opacity-60">
-          {doc.mime_type?.includes('pdf') ? 'PDF' : 'DOCX'} • {((doc.file_size || 0) / (1024 * 1024)).toFixed(1)} MB
-        </span>
+        <div className="flex flex-col gap-1.5">
+          <span className="text-[9px] font-black text-outline-variant uppercase tracking-widest opacity-60">
+            {doc.mime_type?.includes('pdf') ? 'PDF' : 'DOCX'} • {((doc.file_size || 0) / (1024 * 1024)).toFixed(1)} MB
+          </span>
+          <div className="flex items-center gap-3 text-[9px] font-black text-primary uppercase tracking-widest opacity-80">
+            <span className="flex items-center gap-1.5">
+              <Eye size={12} className="opacity-70" />
+              {doc.view_count || 0}
+            </span>
+            <span className="flex items-center gap-1.5">
+              <Download size={11} className="opacity-70" />
+              {doc.download_count || 0}
+            </span>
+          </div>
+        </div>
+
         <Link href={`/documents/${doc.id}`}>
           <div className="bg-slate-50 text-primary px-5 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-primary hover:text-white transition-all flex items-center gap-2 group/btn shadow-sm active:scale-95">
             Chi tiết

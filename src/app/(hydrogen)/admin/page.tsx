@@ -73,6 +73,15 @@ export default function AdminPortalPage() {
       label: 'Core Module'
     },
     {
+      title: 'Đăng tài liệu môn học',
+      description: 'Công cụ dành riêng cho Admin để đăng tải tài liệu trực tiếp vào các học phần môn học với tính năng tìm kiếm thông minh.',
+      href: '/admin/subjects/upload',
+      icon: <PiLightningBold size={28} />,
+      color: 'bg-indigo-600',
+      shadow: 'shadow-indigo-100',
+      label: 'Academic Content'
+    },
+    {
       title: 'Thông báo Admin',
       description: 'Đăng tải các thông báo quan trọng, hướng dẫn học tập hiển thị ngay trên đầu trang chủ của người dùng.',
       href: '/admin/notifications',
@@ -81,6 +90,7 @@ export default function AdminPortalPage() {
       shadow: 'shadow-amber-100',
       label: 'Communications'
     }
+
   ];
 
   return (

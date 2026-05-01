@@ -131,12 +131,38 @@ export default function AdminDashboardPage() {
     loadDocuments();
   }, [status, session, router, loadMajors, loadDocuments]);
 
-  // Real-time fallback
+  // Real-time fallback & BroadcastChannel listener
   useEffect(() => {
+    // 1. Polling every 15s
     const interval = setInterval(() => {
       loadDocuments(true);
-    }, 15000); // Polling every 15s
-    return () => clearInterval(interval);
+    }, 15000);
+
+    // 2. Listen for BroadcastChannel updates (from same browser)
+    let bc: BroadcastChannel | null = null;
+    try {
+      bc = new BroadcastChannel('documents');
+      bc.onmessage = (event) => {
+        if (event.data?.type === 'uploaded') {
+          console.log('New document detected via BroadcastChannel, refreshing...');
+          loadDocuments(true);
+        }
+      };
+    } catch (e) {}
+
+    // 3. Storage event listener (for different tabs)
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === 'documents-updated') {
+        loadDocuments(true);
+      }
+    };
+    window.addEventListener('storage', handleStorage);
+
+    return () => {
+      clearInterval(interval);
+      if (bc) bc.close();
+      window.removeEventListener('storage', handleStorage);
+    };
   }, [loadDocuments]);
 
   const handleApprove = async (id: string) => {

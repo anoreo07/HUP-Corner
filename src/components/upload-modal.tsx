@@ -38,9 +38,9 @@ export default function UploadModal({ isOpen, onClose }: UploadModalProps) {
     latestUpload?.status === 'success' ? 'success' :
     latestUpload?.status === 'error' ? 'fail' : 'form';
 
-  // Use local status for 'form' transitions, but override with global status if something is uploading
-  const status = (globalStatus === 'uploading' || globalStatus === 'success' || globalStatus === 'fail') 
-    ? globalStatus 
+  // Use global status for 'uploading' phase, but use local status for final result
+  const status = (globalStatus === 'uploading' || localStatus === 'uploading') 
+    ? 'uploading' 
     : (localStatus || 'form');
 
   const [majors, setMajors] = useState<Major[]>([]);
@@ -101,6 +101,7 @@ export default function UploadModal({ isOpen, onClose }: UploadModalProps) {
         file_path: result.file_id,
         file_name: result.file_name,
         file_size: result.file_size,
+        mime_type: selectedFile?.type || null,
       });
 
       if (!saved?.id) {
@@ -118,7 +119,7 @@ export default function UploadModal({ isOpen, onClose }: UploadModalProps) {
         }
       } catch (e) {}
 
-      // setLocalStatus('success'); // Not strictly needed as globalStatus will handle it
+      setLocalStatus('success'); 
     } catch (err: any) {
       setError(err.message || 'Có lỗi xảy ra khi upload');
       setLocalStatus('fail');

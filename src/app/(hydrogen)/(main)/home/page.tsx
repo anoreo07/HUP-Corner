@@ -67,17 +67,6 @@ export default async function HomePage() {
                 <span className="material-symbols-outlined">arrow_forward</span>
               </div>
             </Link>
-            <div className="flex -space-x-3 items-center">
-              {[1, 2, 3].map((i) => (
-                <div
-                  key={i}
-                  className="w-10 h-10 rounded-full border-2 border-white bg-slate-200"
-                />
-              ))}
-              <div className="w-10 h-10 rounded-full bg-surface-container-high border-2 border-white flex items-center justify-center text-[10px] font-bold text-slate-500">
-                +2k
-              </div>
-            </div>
           </div>
         </div>
         <div className="lg:col-span-5 flex justify-center relative">

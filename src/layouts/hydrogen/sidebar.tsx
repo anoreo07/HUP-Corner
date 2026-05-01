@@ -9,6 +9,9 @@ import cn from '@core/utils/class-names';
 const navItems = [
   { name: 'Trang chủ', href: '/home', icon: 'home' },
   { name: 'Tài liệu', href: '/all-majors', icon: 'description' },
+  { name: 'Môn học', href: '/subjects', icon: 'auto_stories' },
+  { name: 'Ôn thi', href: '#', icon: 'quiz', badge: 'Beta' },
+
   { name: 'Góp ý', href: '/feedback', icon: 'rate_review' },
 ];
 
@@ -51,11 +54,17 @@ export default function Sidebar({ className }: { className?: string }) {
               )}
             >
               <span className="material-symbols-outlined">{item.icon}</span>
-              {item.name}
+              <span className="flex-1">{item.name}</span>
+              {item.badge && (
+                <span className="px-2 py-0.5 text-[8px] font-black uppercase tracking-widest bg-amber-100 text-amber-700 rounded-full border border-amber-200 shadow-sm shrink-0">
+                  {item.badge}
+                </span>
+              )}
             </Link>
           );
         })}
       </div>
+
 
     </nav>
   );

@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+
 import Image from 'next/image';
 import Link from 'next/link';
 import { 
@@ -47,6 +48,25 @@ export default function DocumentPreviewClient({ document, relatedDocuments }: Do
       window.document.body.style.overflow = 'unset';
     };
   }, [isMaximized]);
+
+  const lastIncrementedId = useRef<string | null>(null);
+
+  // Increment view count on mount
+  useEffect(() => {
+    if (lastIncrementedId.current === document.id) return;
+    lastIncrementedId.current = document.id;
+
+    const incrementView = async () => {
+      try {
+        await supabase.rpc('increment_view_count', { doc_id: document.id });
+      } catch (err) {
+        console.error('Failed to increment view count:', err);
+      }
+    };
+    incrementView();
+  }, [document.id]);
+
+
 
   const getPreviewUrl = () => {
     const fileNameLower = (document.file_name || '').toLowerCase();
@@ -101,7 +121,12 @@ export default function DocumentPreviewClient({ document, relatedDocuments }: Do
         const { data } = supabase.storage.from('documents').getPublicUrl(document.file_path);
         window.open(data.publicUrl, '_blank');
       }
+
+      // Increment download count
+      await supabase.rpc('increment_download_count', { doc_id: document.id });
+      
       toast.success('Bắt đầu tải tài liệu...');
+
     } catch (err) {
       toast.error('Có lỗi khi tải file.');
     } finally {
@@ -226,7 +251,8 @@ export default function DocumentPreviewClient({ document, relatedDocuments }: Do
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 sm:gap-10">
               <InfoItem label="Chuyên ngành" value={document.majors?.name || 'Khác'} />
               <InfoItem label="Môn học" value={document.subject_name || 'N/A'} />
-              <InfoItem label="Năm học" value={document.academic_year || 'N/A'} />
+              <InfoItem label="Năm học" value={document.academic_year ? `Năm học ${document.academic_year}` : 'N/A'} />
+
               <InfoItem label="Dung lượng" value={document.file_size ? `${(document.file_size / (1024 * 1024)).toFixed(1)} MB` : 'N/A'} />
             </div>
 

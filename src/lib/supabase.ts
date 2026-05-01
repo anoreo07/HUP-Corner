@@ -14,6 +14,28 @@ export async function getMajors(): Promise<Major[]> {
   return (data || []) as Major[];
 }
 
+export async function getSubjects(): Promise<import('@/types/database').Subject[]> {
+  const { data, error } = await supabase
+    .from('subjects')
+    .select('*')
+    .order('name');
+
+  if (error) throw error;
+  return (data || []) as import('@/types/database').Subject[];
+}
+
+export async function getSubjectById(id: string): Promise<import('@/types/database').Subject | null> {
+  const { data, error } = await supabase
+    .from('subjects')
+    .select('*')
+    .eq('id', id)
+    .single();
+
+  if (error) return null;
+  return data as import('@/types/database').Subject;
+}
+
+
 export async function getApprovedDocuments(majorCode?: string): Promise<DocumentWithMajor[]> {
   // If running on the server, use the admin client directly to bypass RLS.
   if (typeof window === 'undefined') {
@@ -341,3 +363,16 @@ export async function getRelatedDocuments(document: DocumentWithMajor, limit: nu
   if (error) return [];
   return (data || []) as DocumentWithMajor[];
 }
+
+export async function getDocumentsBySubject(subjectId: string): Promise<DocumentWithMajor[]> {
+  const { data, error } = await supabase
+    .from('documents')
+    .select('*, majors(*), subjects(*)')
+    .eq('status', 'APPROVED')
+    .eq('subject_id', subjectId)
+    .order('created_at', { ascending: false });
+
+  if (error) throw error;
+  return (data || []) as DocumentWithMajor[];
+}
+

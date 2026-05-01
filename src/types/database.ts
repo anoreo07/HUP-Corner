@@ -11,6 +11,20 @@ export interface Major {
   created_at: string;
 }
 
+export interface Subject {
+  id: string;
+  code: string;
+  name: string;
+  credits: number;
+  theory_hours: number;
+  practice_hours: number;
+  exercise_hours: number;
+  seminar_hours: number;
+  major_id: string | null;
+  created_at: string;
+}
+
+
 export interface Document {
   id: string;
   title: string;
@@ -24,12 +38,24 @@ export interface Document {
   file_size: number | null;
   mime_type: string | null;
   status: DocumentStatus;
+  view_count: number;
+  download_count: number;
+  subject_id: string | null;
+  lecturer_name: string | null;
+  faculty: string | null;
+  description: string | null;
+  uploader_name: string | null;
+  uploader_note: string | null;
   created_at: string;
 }
 
+
+
 export interface DocumentWithMajor extends Document {
   majors?: Major | null;
+  subjects?: Subject | null;
 }
+
 
 export interface DocumentInsert {
   title: string;
@@ -42,7 +68,20 @@ export interface DocumentInsert {
   file_name: string;
   file_size?: number | null;
   mime_type?: string | null;
+  view_count?: number;
+  download_count?: number;
+  subject_id?: string | null;
+  status?: DocumentStatus;
+  lecturer_name?: string | null;
+  faculty?: string | null;
+  description?: string | null;
+  uploader_name?: string | null;
+  uploader_note?: string | null;
 }
+
+
+
+
 
 export interface Notification {
   id: string;
