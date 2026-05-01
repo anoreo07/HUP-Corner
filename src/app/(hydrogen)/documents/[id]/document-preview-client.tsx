@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { 
@@ -14,9 +14,12 @@ import {
   Verified,
   FileText,
   Clock,
-  ArrowLeft
+  ArrowLeft,
+  Maximize2,
+  Shrink,
+  X
 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { DocumentWithMajor } from '@/types/database';
 import { toast } from 'react-hot-toast';
 import { supabase } from '@/lib/supabase';
@@ -31,6 +34,19 @@ export default function DocumentPreviewClient({ document, relatedDocuments }: Do
   const [zoom, setZoom] = useState(1);
   const [downloading, setDownloading] = useState(false);
   const [loadingPreview, setLoadingPreview] = useState(true);
+  const [isMaximized, setIsMaximized] = useState(false);
+
+  // Lock body scroll when maximized
+  useEffect(() => {
+    if (isMaximized) {
+      window.document.body.style.overflow = 'hidden';
+    } else {
+      window.document.body.style.overflow = 'unset';
+    }
+    return () => {
+      window.document.body.style.overflow = 'unset';
+    };
+  }, [isMaximized]);
 
   const getPreviewUrl = () => {
     const fileNameLower = (document.file_name || '').toLowerCase();
@@ -94,18 +110,35 @@ export default function DocumentPreviewClient({ document, relatedDocuments }: Do
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8 mb-20">
-      <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-100 shadow-[0px_40px_100px_rgba(13,52,89,0.08)] overflow-hidden p-8 md:p-12">
+    <div className="max-w-7xl mx-auto sm:px-4 py-4 sm:py-8 mb-20">
+      <div className="bg-white dark:bg-slate-900 sm:rounded-[2.5rem] border-x-0 sm:border border-slate-100 shadow-[0px_40px_100px_rgba(13,52,89,0.08)] overflow-hidden p-4 sm:p-8 md:p-12">
 
-        <Link href="/" className="inline-flex items-center gap-2 text-slate-500 hover:text-primary transition-colors font-black text-[10px] uppercase tracking-widest mb-8">
+        <Link href="/" className="inline-flex items-center gap-2 text-slate-500 hover:text-primary transition-colors font-black text-[10px] uppercase tracking-widest mb-6 sm:mb-8 ml-2 sm:ml-0">
           <ArrowLeft size={16} />
           Quay lại trang chủ
         </Link>
 
-      <div className="flex flex-col lg:flex-row gap-12 items-start">
+        {/* Mobile Suggestion Notice */}
+        <motion.div 
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="sm:hidden mb-6 p-4 bg-primary/5 border border-primary/10 rounded-2xl flex items-start gap-3"
+        >
+          <div className="bg-primary/10 p-2 rounded-xl text-primary">
+            <Download size={18} />
+          </div>
+          <div className="flex-1">
+            <p className="text-xs font-black text-on-surface mb-1">Tải xuống để xem tốt hơn</p>
+            <p className="text-[10px] text-slate-500 font-medium leading-relaxed">
+              Trình xem trực tuyến có thể hạn chế trên điện thoại. Bạn nên tải tài liệu hoặc sử dụng chế độ phóng to.
+            </p>
+          </div>
+        </motion.div>
+
+      <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 items-start">
         {/* Document View Area */}
-        <div className="w-full lg:w-3/5 space-y-8">
-          <div className="relative bg-white dark:bg-slate-800 rounded-3xl shadow-[0px_20px_50px_rgba(13,52,89,0.1)] overflow-hidden group border border-slate-100/50 min-h-[850px] flex items-center justify-center">
+        <div className="w-full lg:w-[65%] space-y-6 sm:space-y-8">
+          <div className="relative bg-white dark:bg-slate-800 rounded-2xl sm:rounded-3xl shadow-[0px_20px_50px_rgba(13,52,89,0.1)] overflow-hidden group border border-slate-100/50 min-h-[500px] sm:min-h-[850px] flex items-center justify-center">
             {loadingPreview && (
               <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-slate-50/80 backdrop-blur-sm">
                 <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4" />
@@ -118,34 +151,79 @@ export default function DocumentPreviewClient({ document, relatedDocuments }: Do
             >
               <iframe
                 src={getPreviewUrl()}
-                className="w-full h-[850px] border-none rounded-2xl bg-white"
+                className="w-full h-[500px] sm:h-[850px] border-none rounded-xl sm:rounded-2xl bg-white"
                 title={document.title}
                 onLoad={() => setLoadingPreview(false)}
               />
             </div>
 
-            {/* Immersive Toolbar (Simplified) */}
-            <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-6 px-6 py-3 bg-on-surface/95 backdrop-blur-md rounded-full text-white shadow-2xl transition-all duration-300 opacity-0 group-hover:opacity-100">
-              <button onClick={handleZoomOut} className="hover:text-primary-container transition-colors"><ZoomOut size={18} /></button>
+            {/* Immersive Toolbar */}
+            <div className="absolute bottom-6 sm:bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-4 sm:gap-6 px-5 py-3 bg-on-surface/95 backdrop-blur-md rounded-full text-white shadow-2xl transition-all duration-300 opacity-100 sm:opacity-0 sm:group-hover:opacity-100">
+              <button onClick={handleZoomOut} title="Thu nhỏ" className="hover:text-primary-container transition-colors p-1"><ZoomOut size={18} /></button>
               <div className="h-4 w-px bg-white/20" />
-              <button onClick={handleZoomIn} className="hover:text-primary-container transition-colors"><ZoomIn size={18} /></button>
+              <button onClick={handleZoomIn} title="Phóng to" className="hover:text-primary-container transition-colors p-1"><ZoomIn size={18} /></button>
+              <div className="h-4 w-px bg-white/20" />
+              <button onClick={() => setIsMaximized(true)} title="Toàn màn hình" className="hover:text-primary-container transition-colors p-1">
+                <Maximize2 size={18} />
+              </button>
             </div>
           </div>
 
+          {/* Full Screen Overlay */}
+          <AnimatePresence>
+            {isMaximized && (
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-[999] bg-slate-900/95 backdrop-blur-xl flex flex-col"
+              >
+                <div className="flex items-center justify-between px-6 py-4 bg-white/5 border-b border-white/10 shrink-0">
+                   <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-primary/20 text-primary flex items-center justify-center">
+                        <FileText size={16} />
+                      </div>
+                      <h3 className="text-white font-bold text-sm truncate max-w-[200px] sm:max-w-md">{document.title}</h3>
+                   </div>
+                   <button 
+                    onClick={() => setIsMaximized(false)}
+                    className="w-10 h-10 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition-colors"
+                   >
+                      <X size={20} />
+                   </button>
+                </div>
+                <div className="flex-1 overflow-auto bg-white/5 relative">
+                   <iframe
+                    src={getPreviewUrl()}
+                    className="w-full h-full border-none bg-white shadow-2xl"
+                    title={document.title}
+                  />
+                  {/* Floating Action for Mobile when Maximized */}
+                  <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-4 p-4 bg-primary rounded-full shadow-2xl sm:hidden">
+                      <button onClick={handleDownload} className="text-white flex items-center gap-2 text-xs font-black uppercase tracking-widest px-2">
+                        <Download size={18} />
+                        Tải về
+                      </button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           {/* Metadata Section */}
-          <div className="bg-white rounded-3xl p-10 border border-slate-100 shadow-sm">
-            <div className="flex justify-between items-start mb-10">
-              <div>
-                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary mb-3 block">Chi tiết học thuật</span>
-                <h2 className="text-3xl font-black tracking-tight text-on-surface font-plus-jakarta leading-tight">{document.title}</h2>
+          <div className="bg-white dark:bg-slate-800/50 rounded-2xl sm:rounded-3xl p-6 sm:p-10 border border-slate-100 dark:border-slate-800 shadow-sm">
+            <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-8 sm:mb-10">
+              <div className="flex-1">
+                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary mb-2 sm:mb-3 block">Chi tiết học thuật</span>
+                <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-on-surface font-plus-jakarta leading-tight">{document.title}</h2>
               </div>
-              <div className="flex bg-green-50 text-green-600 px-5 py-2 rounded-full text-[11px] font-black uppercase tracking-widest border border-green-100 items-center gap-2 shadow-sm">
-                <Verified size={16} className="fill-green-600 text-white" />
+              <div className="flex bg-green-50 dark:bg-green-500/10 text-green-600 dark:text-green-400 px-4 py-1.5 sm:px-5 sm:py-2 rounded-full text-[10px] sm:text-[11px] font-black uppercase tracking-widest border border-green-100 dark:border-green-500/20 items-center gap-2 shadow-sm shrink-0">
+                <Verified size={14} className="fill-green-600 dark:fill-green-400 text-white dark:text-slate-900" />
                 Verified
               </div>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-10">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 sm:gap-10">
               <InfoItem label="Chuyên ngành" value={document.majors?.name || 'Khác'} />
               <InfoItem label="Môn học" value={document.subject_name || 'N/A'} />
               <InfoItem label="Năm học" value={document.academic_year || 'N/A'} />
@@ -167,9 +245,9 @@ export default function DocumentPreviewClient({ document, relatedDocuments }: Do
         </div>
 
         {/* Sidebar: Related Documents */}
-        <aside className="w-full lg:w-2/5 space-y-8">
-          <div className="flex items-center justify-between px-3">
-            <h3 className="text-xl font-black text-on-surface tracking-tight font-plus-jakarta">Tài liệu liên quan</h3>
+        <aside className="w-full lg:w-[35%] space-y-6 sm:space-y-8 mt-4 lg:mt-0">
+          <div className="flex items-center justify-between px-2 sm:px-3">
+            <h3 className="text-lg sm:text-xl font-black text-on-surface tracking-tight font-plus-jakarta">Tài liệu liên quan</h3>
             <button className="text-xs font-bold text-primary hover:underline">Khám phá thêm</button>
           </div>
 

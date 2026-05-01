@@ -51,7 +51,7 @@ const nextConfig = {
     ],
   },
   reactStrictMode: true,
-  transpilePackages: ['core'],
+  transpilePackages: ['core', 'zod'],
   experimental: {
     serverActions: {
       bodySizeLimit: '50mb',

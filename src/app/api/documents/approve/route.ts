@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
       })
       .eq('id', id)
       .select()
-      .single();
+      .maybeSingle();
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });

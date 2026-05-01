@@ -20,7 +20,7 @@ export default function Sidebar({ className }: { className?: string }) {
   return (
     <nav
       className={cn(
-        'hidden md:flex fixed left-0 top-0 h-full flex-col p-6 space-y-4 bg-surface-container-low dark:bg-gray-0 h-screen w-56 z-40',
+        'flex h-full flex-col p-6 space-y-4 bg-surface-container-low dark:bg-gray-0',
         className
       )}
     >

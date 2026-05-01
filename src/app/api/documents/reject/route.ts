@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { getToken } from 'next-auth/jwt';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
+import { deleteMessageFromTelegram, parseTelegramFilePath } from '@/lib/telegram';
 
 const NEXTAUTH_SECRET = process.env.NEXTAUTH_SECRET || '';
 
@@ -19,6 +20,30 @@ export async function POST(req: NextRequest) {
 
     const supabaseAdmin = getSupabaseAdmin();
 
+    // 1. Get document to check storage provider and file path
+    const { data: doc, error: docError } = await supabaseAdmin
+      .from('documents')
+      .select('*')
+      .eq('id', id)
+      .maybeSingle();
+
+    if (docError || !doc) {
+      return NextResponse.json({ error: 'Document not found' }, { status: 404 });
+    }
+
+    // 2. Delete from Telegram if needed
+    if (doc.storage_provider === 'telegram' && doc.file_path) {
+      const { chunks } = parseTelegramFilePath(doc.file_path);
+      for (const chunk of chunks) {
+        if (chunk.messageId) {
+          await deleteMessageFromTelegram(chunk.messageId);
+        }
+      }
+    }
+
+    // 3. Update status or delete record
+    // Usually "Reject" means we want to keep the record but marked as rejected,
+    // but the telegram logic was deleting it. I'll stick to updating status to keep history.
     const { data, error } = await supabaseAdmin
       .from('documents')
       .update({
@@ -27,14 +52,18 @@ export async function POST(req: NextRequest) {
       })
       .eq('id', id)
       .select()
-      .single();
+      .maybeSingle();
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json(data);
+    return NextResponse.json({
+      success: true,
+      message: 'Document rejected and cleaned up',
+      document: data
+    });
   } catch (err) {
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
-}
+}

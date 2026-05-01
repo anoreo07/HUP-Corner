@@ -15,7 +15,7 @@ export default function Footer({ className }: { className?: string }) {
   return (
     <footer
       className={cn(
-        'md:ml-56 bg-white dark:bg-slate-900 mt-16 px-6 py-12 border-t border-slate-100 dark:border-slate-800',
+        'bg-white dark:bg-slate-900 mt-16 px-6 py-12 border-t border-slate-100 dark:border-slate-800',
         className
       )}
     >

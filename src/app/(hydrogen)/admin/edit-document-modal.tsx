@@ -1,9 +1,11 @@
 'use client';
 
-import { useState } from 'react';
-import { Modal, Button, Input, Title } from 'rizzui';
+import { useState, useEffect } from 'react';
+import { Modal, Button, Input, Title, ActionIcon } from 'rizzui';
 import { toast } from 'react-hot-toast';
 import { DocumentWithMajor, DocumentType } from '@/types/database';
+import { PiXBold, PiPencilCircleFill, PiInfoFill } from 'react-icons/pi';
+import cn from '@core/utils/class-names';
 
 interface EditDocumentModalProps {
   isOpen: boolean;
@@ -22,19 +24,29 @@ const documentTypeLabels: Record<DocumentType, string> = {
 
 export function EditDocumentModal({
   isOpen,
-  document,
+  document: doc,
   majors,
   onClose,
   onSave,
 }: EditDocumentModalProps) {
   const [formData, setFormData] = useState({
-    title: document?.title || '',
-    subject_name: document?.subject_name || '',
-    academic_year: document?.academic_year || '',
+    title: '',
+    subject_name: '',
+    academic_year: '',
   });
   const [loading, setLoading] = useState(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  useEffect(() => {
+    if (doc) {
+      setFormData({
+        title: doc.title || '',
+        subject_name: doc.subject_name || '',
+        academic_year: doc.academic_year || '',
+      });
+    }
+  }, [doc]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
@@ -44,13 +56,12 @@ export function EditDocumentModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!document) return;
+    if (!doc) return;
 
     setLoading(true);
     try {
-      await onSave(document.id, formData);
+      await onSave(doc.id, formData);
       onClose();
-      toast.success('Cập nhật thành công!');
     } catch (error) {
       toast.error('Có lỗi khi cập nhật');
     } finally {
@@ -62,97 +73,113 @@ export function EditDocumentModal({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      className="w-full"
+      customSize="600px"
+      overlayClassName="backdrop-blur-sm"
+      containerClassName="p-0 overflow-hidden rounded-[2.5rem] border-none shadow-2xl"
     >
-      {document && (
-        <div className="w-full max-w-3xl mx-auto">
-          <div className="space-y-6 p-8 bg-white rounded-lg">
-            <Title as="h2" className="text-3xl font-bold text-center">
-              📝 Sửa thông tin tài liệu
-            </Title>
-            
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Title */}
+      {doc && (
+        <div className="bg-white">
+          {/* Header */}
+          <div className="relative p-8 bg-slate-50 border-b border-slate-100">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-2xl bg-blue-100 text-blue-600 flex items-center justify-center shadow-inner">
+                <PiPencilCircleFill size={32} />
+              </div>
               <div>
-                <label className="block text-sm font-semibold text-gray-800 mb-2">
-                  Tiêu đề
-                </label>
+                <Title as="h2" className="text-2xl font-black text-slate-900 tracking-tight font-plus-jakarta">
+                  Cập nhật tài liệu
+                </Title>
+                <p className="text-sm font-medium text-slate-500">Chỉnh sửa thông tin học thuật của tài liệu</p>
+              </div>
+            </div>
+            <ActionIcon
+              variant="text"
+              onClick={onClose}
+              className="absolute top-6 right-6 rounded-full hover:bg-white transition-colors"
+            >
+              <PiXBold size={20} className="text-slate-400" />
+            </ActionIcon>
+          </div>
+
+          <form onSubmit={handleSubmit} className="p-8 space-y-6">
+            <div className="space-y-5">
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Tên tài liệu</label>
                 <Input
                   name="title"
                   value={formData.title}
                   onChange={handleChange}
-                  placeholder="Nhập tiêu đề"
+                  placeholder="VD: Đề thi giải tích 1 - K76"
                   required
-                  className="w-full"
+                  className="[&>div]:rounded-2xl [&>div]:bg-slate-50 [&>div]:border-none [&_input]:font-bold"
                 />
               </div>
 
-              {/* Subject Name */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-800 mb-2">
-                  Tên môn học
-                </label>
-                <Input
-                  name="subject_name"
-                  value={formData.subject_name}
-                  onChange={handleChange}
-                  placeholder="Nhập tên môn học"
-                  className="w-full"
-                />
-                <p className="text-xs text-gray-500 mt-2">
-                  <strong>💡 Lưu ý:</strong> Tên môn học sẽ tự động viết HOA khi upload tài liệu
-                </p>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Môn học</label>
+                  <Input
+                    name="subject_name"
+                    value={formData.subject_name}
+                    onChange={handleChange}
+                    placeholder="VD: Giải tích 1"
+                    className="[&>div]:rounded-2xl [&>div]:bg-slate-50 [&>div]:border-none [&_input]:font-bold"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Năm học</label>
+                  <Input
+                    name="academic_year"
+                    value={formData.academic_year}
+                    onChange={handleChange}
+                    placeholder="VD: 2024-2025"
+                    className="[&>div]:rounded-2xl [&>div]:bg-slate-50 [&>div]:border-none [&_input]:font-bold"
+                  />
+                </div>
               </div>
+            </div>
 
-              {/* Academic Year */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-800 mb-2">
-                  Năm học
-                </label>
-                <Input
-                  name="academic_year"
-                  value={formData.academic_year}
-                  onChange={handleChange}
-                  placeholder="VD: 2024-2025"
-                  className="w-full"
-                />
+            {/* Read-only info */}
+            <div className="p-5 rounded-3xl bg-blue-50/50 border border-blue-100 flex items-start gap-4">
+              <PiInfoFill className="text-blue-500 shrink-0 mt-0.5" size={20} />
+              <div className="space-y-2">
+                 <div className="flex flex-wrap gap-x-6 gap-y-1">
+                    <p className="text-xs text-slate-600">
+                      <span className="font-bold text-slate-400 uppercase tracking-widest text-[9px] mr-2">NGÀNH:</span>
+                      <span className="font-bold text-blue-700">{doc.majors?.name || 'KHÁC'}</span>
+                    </p>
+                    <p className="text-xs text-slate-600">
+                      <span className="font-bold text-slate-400 uppercase tracking-widest text-[9px] mr-2">LOẠI:</span>
+                      <span className="font-bold text-blue-700">{documentTypeLabels[doc.document_type]}</span>
+                    </p>
+                 </div>
+                 <p className="text-[10px] font-bold text-blue-400 uppercase tracking-[0.1em]">
+                    Cập nhật các thông tin trên sẽ hiển thị ngay cho người dùng
+                 </p>
               </div>
+            </div>
 
-              {/* Info Box */}
-              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-lg p-5 space-y-3">
-                <p className="text-sm text-blue-900">
-                  <strong>📁 Ngành:</strong> {document.majors?.name || '(Khác)'}
-                </p>
-                <p className="text-sm text-blue-900">
-                  <strong>📄 Loại:</strong> {documentTypeLabels[document.document_type]}
-                </p>
-                <p className="text-sm text-blue-900">
-                  <strong>✓ Trạng thái:</strong> <span className="font-semibold">{document.status}</span>
-                </p>
-              </div>
-
-              {/* Actions */}
-              <div className="flex gap-4 pt-4">
-                <Button
-                  variant="outline"
-                  className="flex-1 py-3 text-base font-semibold"
-                  onClick={onClose}
-                  disabled={loading}
-                >
-                  Hủy
-                </Button>
-                <Button
-                  type="submit"
-                  className="flex-1 py-3 text-base font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white"
-                  disabled={loading}
-                >
-                  {loading ? '⏳ Đang lưu...' : '💾 Lưu'}
-                </Button>
-              </div>
-            </form>
-          </div>
+            <div className="flex gap-4 pt-2">
+              <Button
+                variant="outline"
+                className="flex-1 rounded-2xl border-slate-200 text-slate-600 font-bold hover:bg-slate-50"
+                onClick={onClose}
+                disabled={loading}
+              >
+                Hủy bỏ
+              </Button>
+              <Button
+                type="submit"
+                className="flex-1 rounded-2xl bg-slate-900 text-white font-bold shadow-xl shadow-slate-200 hover:bg-slate-800"
+                disabled={loading}
+              >
+                {loading ? 'Đang cập nhật...' : 'Lưu thay đổi'}
+              </Button>
+            </div>
+          </form>
         </div>
       )}
     </Modal>
   );
 }
+

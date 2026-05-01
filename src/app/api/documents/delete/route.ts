@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { getToken } from 'next-auth/jwt';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
+import { deleteMessageFromTelegram, parseTelegramFilePath } from '@/lib/telegram';
 
 const NEXTAUTH_SECRET = process.env.NEXTAUTH_SECRET || '';
 
@@ -19,6 +20,28 @@ export async function DELETE(req: NextRequest) {
 
     const supabaseAdmin = getSupabaseAdmin();
 
+    // 1. Get document to check storage provider and file path
+    const { data: doc, error: docError } = await supabaseAdmin
+      .from('documents')
+      .select('*')
+      .eq('id', id)
+      .maybeSingle();
+
+    if (docError || !doc) {
+      return NextResponse.json({ error: 'Document not found' }, { status: 404 });
+    }
+
+    // 2. Delete from Telegram if needed
+    if (doc.storage_provider === 'telegram' && doc.file_path) {
+      const { chunks } = parseTelegramFilePath(doc.file_path);
+      for (const chunk of chunks) {
+        if (chunk.messageId) {
+          await deleteMessageFromTelegram(chunk.messageId);
+        }
+      }
+    }
+
+    // 3. Delete record from Supabase
     const { error } = await supabaseAdmin
       .from('documents')
       .delete()
@@ -32,4 +55,4 @@ export async function DELETE(req: NextRequest) {
   } catch (err) {
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
-}
+}

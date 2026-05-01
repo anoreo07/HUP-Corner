@@ -1,6 +1,7 @@
 import { metaObject } from '@/config/site.config';
 import { getApprovedDocumentsPaginated, getMajors, getNotifications } from '@/lib/supabase';
 import HomeDashboardClient from '@/app/shared/home-dashboard-client';
+import AnnouncementBanner from '@/app/shared/announcement-banner';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Major } from '@/types/database';
@@ -38,22 +39,7 @@ export default async function HomePage() {
   return (
     <div className="space-y-8">
       {/* Admin Notification */}
-      {notifications.length > 0 && (
-        <div className="w-full bg-gradient-to-r from-primary to-secondary p-4 rounded-lg flex items-center justify-between text-white shadow-lg overflow-hidden relative mt-4">
-          <div className="flex items-center gap-3 z-10 mx-4">
-            <span className="material-symbols-outlined text-tertiary-fixed">
-              campaign
-            </span>
-            <p className="text-sm font-medium">
-              {notifications[0].description || notifications[0].title}
-            </p>
-          </div>
-          <button className="z-10 hover:bg-white/20 p-1 rounded-full transition-all">
-            <span className="material-symbols-outlined">close</span>
-          </button>
-          <div className="absolute right-0 top-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl"></div>
-        </div>
-      )}
+      <AnnouncementBanner notifications={notifications} />
 
       {/* Hero Section */}
       <section className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center bg-surface-container-lowest p-8 rounded-lg shadow-sm border border-outline-variant/10 mx-4 mt-8">

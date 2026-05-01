@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import HamburgerButton from '@/layouts/hamburger-button';
 import Sidebar from '@/layouts/hydrogen/sidebar';
 import SearchWidget from '@/app/shared/search/search';
@@ -14,16 +15,26 @@ export default function Header({ className }: { className?: string }) {
   return (
     <header
       className={cn(
-        'flex items-center justify-between px-6 py-4 w-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-50 shadow-[0px_20px_40px_rgba(13,52,89,0.06)] md:pl-80',
+        'flex items-center justify-between px-6 py-4 w-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-50 shadow-[0px_20px_40px_rgba(13,52,89,0.06)]',
         className
       )}
     >
       <div className="flex items-center gap-4 flex-1">
         <HamburgerButton
-          view={<Sidebar className="static w-full 2xl:w-full" />}
+          view={<Sidebar className="w-full" />}
           className="md:hidden p-2 hover:bg-surface-container-high rounded-full transition-all"
         />
         
+        <Link href="/" className="md:hidden flex items-center gap-2">
+          <Image 
+            src="/logo.png" 
+            alt="HUP Corner Logo" 
+            width={100} 
+            height={30} 
+            className="h-auto w-24 dark:invert"
+          />
+        </Link>
+
         <div className="relative w-full max-w-md hidden sm:block">
           <SearchWidget className="w-full xl:max-w-none" />
         </div>

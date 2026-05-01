@@ -4,6 +4,8 @@ import DocumentPreviewClient from './document-preview-client';
 import { notFound } from 'next/navigation';
 import { metaObject } from '@/config/site.config';
 
+export const dynamic = 'force-dynamic';
+
 export async function generateMetadata({ params }: { params: { id: string } }) {
   const document = await getDocumentById(params.id);
   if (!document) return metaObject('Tài liệu không tồn tại');
