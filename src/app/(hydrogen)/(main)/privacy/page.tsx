@@ -2,8 +2,9 @@ import React from 'react';
 import { metaObject } from '@/config/site.config';
 
 export const metadata = {
-  ...metaObject('Chính sách bảo mật - HUP Corner'),
+  ...metaObject('Chính sách bảo mật'),
 };
+
 
 export default function PrivacyPage() {
   return (

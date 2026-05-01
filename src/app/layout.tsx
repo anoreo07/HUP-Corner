@@ -32,7 +32,19 @@ export default async function RootLayout({
           rel="stylesheet"
           href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
         />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'WebSite',
+              name: 'HUP Corner',
+              url: 'https://hupcorner.vercel.app',
+            }),
+          }}
+        />
       </head>
+
       <body
         // to prevent any warning that is caused by third party extensions like Grammarly
         suppressHydrationWarning

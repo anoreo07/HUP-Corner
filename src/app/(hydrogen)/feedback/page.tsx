@@ -5,9 +5,12 @@ import { Verified, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 
+import { metaObject } from '@/config/site.config';
+
 export const metadata = {
-  title: 'Đánh giá website - The Academic Atelier',
+  ...metaObject('Góp ý'),
 };
+
 
 export default function FeedbackPage() {
   return (
@@ -23,12 +26,14 @@ export default function FeedbackPage() {
             <Image 
               fill
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
-              alt="Atelier aesthetic"
+              alt="HUP Corner aesthetic"
+
               src="https://images.unsplash.com/photo-1497032628192-86f99bcd76bc?auto=format&fit=crop&q=80&w=1000" 
             />
             <div className="absolute inset-0 bg-gradient-to-t from-secondary/80 to-transparent flex flex-col justify-end p-8">
               <p className="text-white font-black text-xl leading-tight font-plus-jakarta">
-                Góp ý của bạn là tài sản quý giá nhất của Atelier.
+                Góp ý của bạn là tài sản quý giá nhất của HUP Corner.
+
               </p>
             </div>
           </div>
@@ -39,7 +44,8 @@ export default function FeedbackPage() {
           <div className="flex items-center justify-between mb-8">
             <div>
               <h2 className="text-3xl font-extrabold text-on-surface tracking-tight font-plus-jakarta">Cộng đồng đánh giá</h2>
-              <p className="text-on-surface-variant text-sm mt-1 font-medium">Hàng trăm học viên đã chia sẻ cảm nghĩ về Atelier.</p>
+              <p className="text-on-surface-variant text-sm mt-1 font-medium">Hàng trăm học viên đã chia sẻ cảm nghĩ về HUP Corner.</p>
+
             </div>
             <div className="flex gap-2">
               <span className="bg-green-50 text-green-600 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 border border-green-100 shadow-sm">

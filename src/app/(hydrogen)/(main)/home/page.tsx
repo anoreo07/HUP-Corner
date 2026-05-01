@@ -7,8 +7,9 @@ import Link from 'next/link';
 import { Major } from '@/types/database';
 
 export const metadata = {
-  ...metaObject('Trang chủ - HUP Corner'),
+  ...metaObject('Trang chủ'),
 };
+
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;

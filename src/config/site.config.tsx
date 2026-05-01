@@ -8,7 +8,7 @@ enum MODE {
 }
 
 export const siteConfig = {
-  title: 'HUP Corner - Kho tài liệu học thuật số 1 HUP',
+  title: 'HUP Corner',
   description: 'Nơi chia sẻ và lưu trữ tài liệu học tập dành riêng cho sinh viên HUP.',
   // update this to your real production URL when available
   siteUrl: 'https://hupcorner.vercel.app',
@@ -19,17 +19,19 @@ export const siteConfig = {
   layout: LAYOUT_OPTIONS.HYDROGEN,
 };
 
+
 export const metaObject = (
   title?: string,
   openGraph?: OpenGraph,
   description: string = siteConfig.description
 ): Metadata => {
   return {
-    title: title ? `${title} - ${siteConfig.title}` : siteConfig.title,
+    title: title ? `${title} - ${siteConfig.title}` : `${siteConfig.title} - Chia sẻ tài liệu HUP`,
     description,
     keywords: siteConfig.keywords,
+    applicationName: siteConfig.title,
     openGraph: openGraph ?? {
-      title: title ? `${title} - ${siteConfig.title}` : siteConfig.title,
+      title: title ? `${title} - ${siteConfig.title}` : `${siteConfig.title} - Chia sẻ tài liệu HUP`,
       description,
       url: siteConfig.siteUrl,
       siteName: siteConfig.title, // https://developers.google.com/search/docs/appearance/site-names
@@ -37,7 +39,7 @@ export const metaObject = (
       // resolution errors. Place `opengraph-image.png` in the `public/` folder
       // (recommended) or adjust this URL to point to your CDN/absolute URL.
       images: `${siteConfig.siteUrl}/opengraph-image.png`,
-      locale: 'en_US',
+      locale: 'vi_VN',
       type: 'website',
     },
     icons: {
@@ -45,5 +47,8 @@ export const metaObject = (
       apple: siteConfig.logo,
       shortcut: siteConfig.logo,
     },
+    other: {
+      'apple-mobile-web-app-title': siteConfig.title,
+    }
   };
 };

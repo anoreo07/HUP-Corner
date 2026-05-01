@@ -2,8 +2,9 @@ import React from 'react';
 import { metaObject } from '@/config/site.config';
 
 export const metadata = {
-  ...metaObject('Điều khoản dịch vụ - HUP Corner'),
+  ...metaObject('Điều khoản dịch vụ'),
 };
+
 
 export default function TermsPage() {
   return (

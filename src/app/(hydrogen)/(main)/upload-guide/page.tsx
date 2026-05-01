@@ -3,8 +3,9 @@ import { metaObject } from '@/config/site.config';
 import { CloudUpload, ShieldCheck, CheckCircle2, FileText, Info } from 'lucide-react';
 
 export const metadata = {
-  ...metaObject('Hướng dẫn tải lên - HUP Corner'),
+  ...metaObject('Hướng dẫn tải lên'),
 };
+
 
 export default function UploadGuidePage() {
   return (
