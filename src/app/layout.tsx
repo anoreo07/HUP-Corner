@@ -4,6 +4,8 @@ import { siteConfig, metaObject } from '@/config/site.config';
 import { inter, lexendDeca, plusJakartaSans } from '@/app/fonts';
 import cn from '@core/utils/class-names';
 import { Providers } from '@/app/providers';
+import Script from 'next/script';
+
 
 // styles
 import 'swiper/css';
@@ -36,6 +38,19 @@ export default async function RootLayout({
         suppressHydrationWarning
         className={cn(inter.variable, lexendDeca.variable, plusJakartaSans.variable, 'font-inter')}
       >
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-2BPFT73L4Z"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'G-2BPFT73L4Z');
+          `}
+        </Script>
         <Providers session={session}>{children}</Providers>
       </body>
     </html>
