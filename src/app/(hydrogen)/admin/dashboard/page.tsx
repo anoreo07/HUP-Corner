@@ -30,6 +30,7 @@ import {
 } from '@/lib/supabase';
 import { DocumentWithMajor, DocumentType, DocumentStatus } from '@/types/database';
 import cn from '@core/utils/class-names';
+import { downloadFileParallel } from '@/utils/file-chunking';
 
 const documentTypeLabels: Record<DocumentType, string> = {
   EXAM: 'Đề thi',
@@ -289,20 +290,15 @@ export default function AdminDashboardPage() {
   const handleDownload = async (doc: DocumentWithMajor) => {
     if (doc.storage_provider === 'telegram') {
       try {
-        toast.loading('Đang chuẩn bị tải xuống...', { duration: 1000 });
-        const response = await fetch(
-          `/api/telegram/download?fileId=${encodeURIComponent(doc.file_path)}&fileName=${encodeURIComponent(doc.file_name || doc.title)}`
+        const toastId = toast.loading('Đang chuẩn bị tải xuống...');
+        await downloadFileParallel(
+          doc.file_path,
+          doc.file_name || doc.title,
+          (progress, message) => {
+            if (message) toast.loading(message, { id: toastId });
+          }
         );
-        if (!response.ok) throw new Error('Download failed');
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = doc.file_name || doc.title;
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        a.remove();
+        toast.success('Tải về thành công!', { id: toastId });
       } catch (err) {
         toast.error('Lỗi khi tải file');
       }

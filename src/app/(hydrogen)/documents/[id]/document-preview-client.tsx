@@ -25,6 +25,7 @@ import { DocumentWithMajor } from '@/types/database';
 import { toast } from 'react-hot-toast';
 import { supabase } from '@/lib/supabase';
 import cn from '@core/utils/class-names';
+import { downloadFileParallel } from '@/utils/file-chunking';
 
 interface DocumentPreviewClientProps {
   document: DocumentWithMajor;
@@ -104,19 +105,16 @@ export default function DocumentPreviewClient({ document, relatedDocuments }: Do
 
   const handleDownload = async () => {
     setDownloading(true);
+    const toastId = toast.loading('Đang chuẩn bị tải tài liệu...');
     try {
       if (document.storage_provider === 'telegram') {
-        const response = await fetch(
-          `/api/telegram/download?fileId=${encodeURIComponent(document.file_path)}&fileName=${encodeURIComponent(document.file_name || document.title)}`
+        await downloadFileParallel(
+          document.file_path,
+          document.file_name || document.title,
+          (progress, message) => {
+            if (message) toast.loading(message, { id: toastId });
+          }
         );
-        if (!response.ok) throw new Error('Download failed');
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = window.document.createElement('a');
-        a.href = url;
-        a.download = document.file_name || document.title;
-        a.click();
-        window.URL.revokeObjectURL(url);
       } else {
         const { data } = supabase.storage.from('documents').getPublicUrl(document.file_path);
         window.open(data.publicUrl, '_blank');
@@ -125,10 +123,10 @@ export default function DocumentPreviewClient({ document, relatedDocuments }: Do
       // Increment download count
       await supabase.rpc('increment_download_count', { doc_id: document.id });
       
-      toast.success('Bắt đầu tải tài liệu...');
+      toast.success('Tải tài liệu hoàn tất!', { id: toastId });
 
     } catch (err) {
-      toast.error('Có lỗi khi tải file.');
+      toast.error('Có lỗi khi tải file.', { id: toastId });
     } finally {
       setDownloading(false);
     }

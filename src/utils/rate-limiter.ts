@@ -117,9 +117,9 @@ export function checkRateLimit(
  */
 export const RATE_LIMITS = {
   UPLOAD: {
-    maxRequests: 7,
+    maxRequests: 50,
     windowMs: 1 * 60 * 1000, // 1 minute
-    message: 'Quá nhiều upload. Vui lòng chờ 1 phút trước khi upload tiếp.',
+    message: 'Quá nhiều yêu cầu upload. Vui lòng chờ 1 phút trước khi tiếp tục.',
   },
   API_GENERAL: {
     maxRequests: 100,

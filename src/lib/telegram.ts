@@ -284,3 +284,12 @@ export async function downloadFileAuto(filePath: string): Promise<{
 
   return { buffer: Buffer.concat(buffers as any) };
 }
+
+/**
+ * Get direct download URL for a fileId
+ * Used for client-side downloading of individual chunks
+ */
+export async function getDirectDownloadUrl(fileId: string): Promise<string> {
+  const fileInfo = await getFileFromTelegram(fileId);
+  return `${TELEGRAM_FILE_BASE}/${fileInfo.file_path}`;
+}
