@@ -43,7 +43,6 @@ export default function Header({ className }: { className?: string }) {
       <div className="flex items-center gap-3">
         <button 
           onClick={() => {
-            console.log('Upload button clicked');
             openModal();
           }}
           className="bg-gradient-to-br from-blue-600 to-indigo-400 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:scale-105 active:scale-95 transition-all flex items-center gap-2"

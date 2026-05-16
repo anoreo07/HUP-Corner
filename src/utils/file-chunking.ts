@@ -130,7 +130,7 @@ export async function uploadChunkToTelegram(
         const retryAfterHeader = xhr.getResponseHeader('Retry-After');
         const waitMs = (retryAfterHeader ? parseInt(retryAfterHeader, 10) : 5) * 1000;
 
-        console.log(`Rate limit hit for chunk ${chunk.index + 1}. Retrying in ${waitMs}ms... (Attempt ${retryCount + 1}/${MAX_RETRIES})`);
+        // Rate limit hit for chunk retry logic
 
         setTimeout(async () => {
           try {

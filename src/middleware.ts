@@ -3,8 +3,7 @@ import { getToken } from 'next-auth/jwt';
 
 // Use the same fallback secret as next-auth to avoid mismatches when
 // NEXTAUTH_SECRET is not set in environment (development fallback).
-const NEXTAUTH_SECRET =
-  process.env.NEXTAUTH_SECRET || 'development-secret-key-change-in-production';
+import { env } from '@/env.mjs';
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -16,7 +15,7 @@ export async function middleware(request: NextRequest) {
       return NextResponse.next();
     }
 
-    const token = await getToken({ req: request, secret: NEXTAUTH_SECRET });
+    const token = await getToken({ req: request, secret: env.NEXTAUTH_SECRET });
     if (!token || (token as any).role !== 'admin') {
       // API callers should receive 401
       if (pathname.startsWith('/api')) {

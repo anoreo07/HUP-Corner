@@ -19,7 +19,6 @@ export default function HomeDashboardClient({
   recentDocuments,
   majors,
 }: HomeDashboardClientProps) {
-  console.log('Dashboard Data:', { featuredDocuments, recentDocuments });
   const router = useRouter();
 
   const handleViewDetail = (doc: DocumentWithMajor) => {

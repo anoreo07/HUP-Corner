@@ -35,7 +35,7 @@ export function TelegramFileUploader() {
     if (file.size > maxSize) {
       return {
         valid: false,
-        message: `File quá lớn. Tối đa 20MB (file của bạn: ${(file.size / 1024 / 1024).toFixed(2)}MB)`,
+        message: `File quá lớn. Tối đa 100MB (file của bạn: ${(file.size / 1024 / 1024).toFixed(2)}MB)`,
       };
     }
 

@@ -1,6 +1,4 @@
-'use client';
-
-import React from 'react';
+import React, { memo } from 'react';
 import Link from 'next/link';
 import { 
   Bookmark, 
@@ -12,7 +10,6 @@ import {
   Download
 } from 'lucide-react';
 
-import { motion } from 'framer-motion';
 import { DocumentWithMajor, DocumentType } from '@/types/database';
 import cn from '@core/utils/class-names';
 
@@ -41,7 +38,7 @@ export function InfoRow({ icon, text }: { icon: React.ReactNode, text: string })
   );
 }
 
-export function DocumentCard({ doc }: { doc: DocumentWithMajor }) {
+export const DocumentCard = memo(function DocumentCard({ doc }: { doc: DocumentWithMajor }) {
   return (
     <div 
       className="group bg-white dark:bg-slate-900 rounded-[2rem] p-7 shadow-[0px_10px_40px_rgba(13,52,89,0.04)] border border-slate-100/50 hover:shadow-[0px_20px_60px_rgba(13,52,89,0.08)] transition-all flex flex-col justify-between min-h-[340px]"
@@ -99,4 +96,4 @@ export function DocumentCard({ doc }: { doc: DocumentWithMajor }) {
       </div>
     </div>
   );
-}
+});

@@ -114,5 +114,5 @@ export const authOptions: NextAuthOptions = {
         ]
       : []),
   ],
-  secret: env.NEXTAUTH_SECRET || 'development-secret-key-change-in-production',
+  secret: env.NEXTAUTH_SECRET,
 };

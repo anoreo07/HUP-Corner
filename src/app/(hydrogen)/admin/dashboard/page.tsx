@@ -145,7 +145,6 @@ export default function AdminDashboardPage() {
       bc = new BroadcastChannel('documents');
       bc.onmessage = (event) => {
         if (event.data?.type === 'uploaded') {
-          console.log('New document detected via BroadcastChannel, refreshing...');
           loadDocuments(true);
         }
       };

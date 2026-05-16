@@ -25,9 +25,15 @@ if (!supabaseServiceRoleKey) {
 	);
 }
 
-// Do NOT create a service-role client at module import time. Export a factory
-// so callers can explicitly obtain the service client after performing
-// authentication/authorization checks.
+let supabaseAdmin: SupabaseClient | null = null;
+
+/**
+ * Returns a Supabase client with service-role privileges.
+ * Caches the client instance for reuse within the same process.
+ */
 export function getSupabaseAdmin(): SupabaseClient {
-	return createClient(supabaseUrl, supabaseServiceRoleKey);
+  if (supabaseAdmin) return supabaseAdmin;
+  
+  supabaseAdmin = createClient(supabaseUrl, supabaseServiceRoleKey);
+  return supabaseAdmin;
 }
