@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Modal, Button, Input, Title, ActionIcon } from 'rizzui';
+import { Modal, Button, Input, Title, ActionIcon, Select } from 'rizzui';
 import { toast } from 'react-hot-toast';
 import { DocumentWithMajor, DocumentType } from '@/types/database';
 import { PiXBold, PiPencilCircleFill, PiInfoFill } from 'react-icons/pi';
@@ -12,13 +12,14 @@ interface EditDocumentModalProps {
   document: DocumentWithMajor | null;
   majors: Array<{ id: string; name: string }>;
   onClose: () => void;
-  onSave: (documentId: string, data: { title: string; subject_name: string; academic_year: string }) => Promise<void>;
+  onSave: (documentId: string, data: { title: string; subject_name: string; academic_year: string; category?: 'THEORY' | 'PRACTICAL' | null }) => Promise<void>;
 }
 
 const documentTypeLabels: Record<DocumentType, string> = {
   EXAM: 'Đề thi',
   SLIDE: 'Slide bài giảng',
   TEXTBOOK: 'Giáo trình',
+  OUTLINE: 'Đề cương',
   OTHER: 'Khác',
 };
 
@@ -33,6 +34,7 @@ export function EditDocumentModal({
     title: '',
     subject_name: '',
     academic_year: '',
+    category: 'THEORY' as 'THEORY' | 'PRACTICAL' | null,
   });
   const [loading, setLoading] = useState(false);
 
@@ -42,6 +44,7 @@ export function EditDocumentModal({
         title: doc.title || '',
         subject_name: doc.subject_name || '',
         academic_year: doc.academic_year || '',
+        category: doc.category || 'THEORY',
       });
     }
   }, [doc]);
@@ -136,6 +139,19 @@ export function EditDocumentModal({
                     className="[&>div]:rounded-2xl [&>div]:bg-slate-50 [&>div]:border-none [&_input]:font-bold"
                   />
                 </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Phân loại</label>
+                <Select
+                  options={[
+                    { value: 'THEORY', label: 'Lý thuyết' },
+                    { value: 'PRACTICAL', label: 'Thực hành' },
+                  ]}
+                  value={formData.category}
+                  onChange={(val: string) => setFormData(prev => ({ ...prev, category: val as any }))}
+                  className="[&>div]:rounded-2xl [&>div]:bg-slate-50 [&>div]:border-none [&_button]:font-bold"
+                />
               </div>
             </div>
 

@@ -13,7 +13,9 @@ export async function GET(req: Request) {
       .from('documents')
       .select('*, majors(*)')
       .eq('status', 'APPROVED')
+      .neq('document_type', 'OUTLINE')
       .or(`title.ilike.%${q}%,subject_name.ilike.%${q}%`)
+
       .order('created_at', { ascending: false })
       .limit(50);
 

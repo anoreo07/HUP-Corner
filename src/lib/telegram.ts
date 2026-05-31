@@ -3,10 +3,49 @@
  * Used for uploading/downloading files via Telegram channel as storage
  */
 
-const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '';
 const TELEGRAM_CHANNEL_ID = process.env.TELEGRAM_CHANNEL_ID || '';
-const TELEGRAM_API_BASE = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}`;
-const TELEGRAM_FILE_BASE = `https://api.telegram.org/file/bot${TELEGRAM_BOT_TOKEN}`;
+
+/**
+ * Dynamically resolves the Telegram Bot Token for a given bot index.
+ * e.g., botIndex = 1 -> TELEGRAM_BOT_TOKEN
+ *       botIndex = 2 -> TELEGRAM_BOT2_TOKEN
+ */
+export function getTelegramBotToken(botIndex: number = 1): string {
+  if (botIndex <= 1) {
+    return process.env.TELEGRAM_BOT_TOKEN || '';
+  }
+  const key = `TELEGRAM_BOT${botIndex}_TOKEN`;
+  return process.env[key] || process.env.TELEGRAM_BOT_TOKEN || '';
+}
+
+/**
+ * Scans active environment variables to detect all configured Telegram Bot indexes.
+ * e.g., if TELEGRAM_BOT_TOKEN and TELEGRAM_BOT2_TOKEN are present, returns [1, 2].
+ */
+export function getConfiguredBotIndexes(): number[] {
+  const indexes = new Set<number>([1]); // Default is always Bot 1
+  
+  for (const key in process.env) {
+    const match = key.match(/^TELEGRAM_BOT(\d+)_TOKEN$/);
+    if (match) {
+      const idx = parseInt(match[1], 10);
+      if (process.env[key]) {
+        indexes.add(idx);
+      }
+    }
+  }
+  return Array.from(indexes).sort((a, b) => a - b);
+}
+
+export function getTelegramApiBase(botIndex: number = 1): string {
+  const token = getTelegramBotToken(botIndex);
+  return `https://api.telegram.org/bot${token}`;
+}
+
+export function getTelegramFileBase(botIndex: number = 1): string {
+  const token = getTelegramBotToken(botIndex);
+  return `https://api.telegram.org/file/bot${token}`;
+}
 
 export interface TelegramFileResult {
   file_id: string;
@@ -31,7 +70,8 @@ export async function uploadFileToTelegram(
   fileBuffer: Buffer,
   fileName: string,
   mimeType: string,
-  caption?: string
+  caption?: string,
+  botIndex: number = 1
 ): Promise<TelegramFileResult> {
   const formData = new FormData();
   const uint8 = new Uint8Array(fileBuffer);
@@ -42,7 +82,7 @@ export async function uploadFileToTelegram(
     formData.append('caption', caption);
   }
 
-  const response = await fetch(`${TELEGRAM_API_BASE}/sendDocument`, {
+  const response = await fetch(`${getTelegramApiBase(botIndex)}/sendDocument`, {
     method: 'POST',
     body: formData,
   });
@@ -67,8 +107,8 @@ export async function uploadFileToTelegram(
 /**
  * Get file info from Telegram using file_id
  */
-export async function getFileFromTelegram(fileId: string): Promise<TelegramGetFileResult> {
-  const response = await fetch(`${TELEGRAM_API_BASE}/getFile?file_id=${fileId}`);
+export async function getFileFromTelegram(fileId: string, botIndex: number = 1): Promise<TelegramGetFileResult> {
+  const response = await fetch(`${getTelegramApiBase(botIndex)}/getFile?file_id=${fileId}`);
   const result = await response.json();
 
   if (!result.ok) {
@@ -81,19 +121,19 @@ export async function getFileFromTelegram(fileId: string): Promise<TelegramGetFi
 /**
  * Get download URL for a Telegram file
  */
-export async function getTelegramFileDownloadUrl(fileId: string): Promise<string> {
-  const fileInfo = await getFileFromTelegram(fileId);
-  return `${TELEGRAM_FILE_BASE}/${fileInfo.file_path}`;
+export async function getTelegramFileDownloadUrl(fileId: string, botIndex: number = 1): Promise<string> {
+  const fileInfo = await getFileFromTelegram(fileId, botIndex);
+  return `${getTelegramFileBase(botIndex)}/${fileInfo.file_path}`;
 }
 
 /**
  * Download file content from Telegram
  */
-export async function downloadFileFromTelegram(fileId: string): Promise<{
+export async function downloadFileFromTelegram(fileId: string, botIndex: number = 1): Promise<{
   buffer: Buffer;
   url: string;
 }> {
-  const downloadUrl = await getTelegramFileDownloadUrl(fileId);
+  const downloadUrl = await getTelegramFileDownloadUrl(fileId, botIndex);
   const response = await fetch(downloadUrl);
 
   if (!response.ok) {
@@ -110,9 +150,9 @@ export async function downloadFileFromTelegram(fileId: string): Promise<{
 /**
  * Delete a message (file) from Telegram channel
  */
-export async function deleteMessageFromTelegram(messageId: number): Promise<boolean> {
+export async function deleteMessageFromTelegram(messageId: number, botIndex: number = 1): Promise<boolean> {
   const response = await fetch(
-    `${TELEGRAM_API_BASE}/deleteMessage?chat_id=${TELEGRAM_CHANNEL_ID}&message_id=${messageId}`
+    `${getTelegramApiBase(botIndex)}/deleteMessage?chat_id=${TELEGRAM_CHANNEL_ID}&message_id=${messageId}`
   );
   const result = await response.json();
 
@@ -178,7 +218,8 @@ export async function uploadFileChunked(
   fileBuffer: Buffer,
   fileName: string,
   mimeType: string,
-  caption?: string
+  caption?: string,
+  botIndex: number = 1
 ): Promise<{
   file_path: string;
   file_name: string;
@@ -189,7 +230,7 @@ export async function uploadFileChunked(
 
   // If small enough, use single upload
   if (totalSize <= TELEGRAM_CHUNK_SIZE) {
-    const result = await uploadFileToTelegram(fileBuffer, fileName, mimeType, caption);
+    const result = await uploadFileToTelegram(fileBuffer, fileName, mimeType, caption, botIndex);
     return {
       file_path: `${result.file_id}|${result.message_id}`,
       file_name: result.file_name,
@@ -217,7 +258,8 @@ export async function uploadFileChunked(
       Buffer.from(chunkBuffer),
       chunkName,
       'application/octet-stream',
-      chunkCaption
+      chunkCaption,
+      botIndex
     );
 
     chunkParts.push(`${result.file_id}|${result.message_id}`);
@@ -249,7 +291,7 @@ export class TelegramFileTooLargeError extends Error {
  * Download a file from Telegram, reassembling chunks if needed.
  * Throws TelegramFileTooLargeError for legacy files >20MB.
  */
-export async function downloadFileAuto(filePath: string): Promise<{
+export async function downloadFileAuto(filePath: string, botIndex: number = 1): Promise<{
   buffer: Buffer;
 }> {
   const parsed = parseTelegramFilePath(filePath);
@@ -257,7 +299,7 @@ export async function downloadFileAuto(filePath: string): Promise<{
   if (!parsed.isChunked) {
     // Single file download — may fail for legacy >20MB files
     try {
-      const { buffer } = await downloadFileFromTelegram(parsed.fileId);
+      const { buffer } = await downloadFileFromTelegram(parsed.fileId, botIndex);
       return { buffer };
     } catch (err: any) {
       if (
@@ -273,7 +315,7 @@ export async function downloadFileAuto(filePath: string): Promise<{
 
   // Download all chunks in parallel for faster performance
   const downloadPromises = parsed.chunks.map(chunk => 
-    downloadFileFromTelegram(chunk.fileId)
+    downloadFileFromTelegram(chunk.fileId, botIndex)
       .then(({ buffer }) => buffer)
       .catch(err => {
         throw err;
@@ -289,7 +331,7 @@ export async function downloadFileAuto(filePath: string): Promise<{
  * Get direct download URL for a fileId
  * Used for client-side downloading of individual chunks
  */
-export async function getDirectDownloadUrl(fileId: string): Promise<string> {
-  const fileInfo = await getFileFromTelegram(fileId);
-  return `${TELEGRAM_FILE_BASE}/${fileInfo.file_path}`;
+export async function getDirectDownloadUrl(fileId: string, botIndex: number = 1): Promise<string> {
+  const fileInfo = await getFileFromTelegram(fileId, botIndex);
+  return `${getTelegramFileBase(botIndex)}/${fileInfo.file_path}`;
 }

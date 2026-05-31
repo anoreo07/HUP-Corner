@@ -89,6 +89,15 @@ export default function AdminPortalPage() {
       color: 'bg-amber-500',
       shadow: 'shadow-amber-100',
       label: 'Communications'
+    },
+    {
+      title: 'Tải đề cương ôn thi',
+      description: 'Tải lên đề cương và tài liệu ôn thi. Chỉ các tài liệu này mới hiển thị trong mục Ôn thi.',
+      href: '/admin/exam-prep/upload',
+      icon: <PiShieldCheckFill size={28} />,
+      color: 'bg-green-600',
+      shadow: 'shadow-green-100',
+      label: 'Exam Preparation'
     }
 
   ];

@@ -5,6 +5,8 @@ import { z } from 'zod';
 const uploadSchema = z.object({
   title: z.string().min(1, 'Title is required'),
   document_type: z.string().min(1, 'Document type is required'),
+  category: z.enum(['THEORY', 'PRACTICAL']).nullable().optional(),
+  telegram_bot_index: z.number().nullable().optional().default(1),
   major_id: z.string().nullable().optional(),
   subject_id: z.string().nullable().optional(),
   subject_name: z.string().nullable().optional(),

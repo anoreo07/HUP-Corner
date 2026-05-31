@@ -25,6 +25,7 @@ export const env = createEnv({
 
     // Telegram Bot
     TELEGRAM_BOT_TOKEN: z.string().optional(),
+    TELEGRAM_BOT2_TOKEN: z.string().optional(),
     TELEGRAM_CHANNEL_ID: z.string().optional(),
 
     // Supabase Server-side Key

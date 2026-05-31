@@ -22,7 +22,13 @@ const documentTypeOptions = [
   { value: 'EXAM', label: 'Đề thi' },
   { value: 'SLIDE', label: 'Slide bài giảng' },
   { value: 'TEXTBOOK', label: 'Giáo trình' },
+  { value: 'OUTLINE', label: 'Đề cương' },
   { value: 'OTHER', label: 'Khác' },
+];
+
+const categoryOptions = [
+  { value: 'THEORY', label: 'Lý thuyết' },
+  { value: 'PRACTICAL', label: 'Thực hành' },
 ];
 
 const labelClasses = "font-black text-[10px] uppercase tracking-widest text-slate-500 mb-2 block px-1";
@@ -37,6 +43,7 @@ export default function SubjectDocumentUploadForm() {
     title: '',
     subjectId: '',
     documentType: '',
+    category: 'THEORY',
     academicYear: '',
   });
   const [error, setError] = useState('');
@@ -69,6 +76,10 @@ export default function SubjectDocumentUploadForm() {
         ? (formData.documentType as any).value 
         : formData.documentType;
 
+      const category = typeof formData.category === 'object'
+        ? (formData.category as any).value
+        : formData.category;
+
       // 1. Upload to Telegram
       const result = await uploadFile(selectedFile);
       if (!result || !result.file_id) {
@@ -85,6 +96,8 @@ export default function SubjectDocumentUploadForm() {
         subject_id: subjectId,
         subject_name: selectedSubject?.name || null,
         major_id: selectedSubject?.major_id || null,
+        category: category || null,
+        telegram_bot_index: result.telegram_bot_index || 1,
         academic_year: formData.academicYear || null,
         storage_provider: 'telegram',
         file_path: result.file_id,
@@ -127,7 +140,7 @@ export default function SubjectDocumentUploadForm() {
           <Button size="lg" onClick={() => {
             setStatus('form');
             setSelectedFile(null);
-            setFormData({ title: '', subjectId: '', documentType: '', academicYear: '' });
+            setFormData({ title: '', subjectId: '', documentType: '', category: 'THEORY', academicYear: '' });
           }} className="rounded-full w-full sm:w-auto">Tiếp tục đăng tài liệu</Button>
         </div>
       </motion.div>
@@ -186,15 +199,23 @@ export default function SubjectDocumentUploadForm() {
                     labelClassName={labelClasses}
                     selectClassName="rounded-xl border-slate-100"
                   />
-                  <Input
-                    label="Năm học"
-                    placeholder="2024-2025"
-                    value={formData.academicYear}
-                    onChange={(e) => setFormData({...formData, academicYear: e.target.value})}
+                  <Select
+                    label="Phân loại"
+                    options={categoryOptions}
+                    value={formData.category}
+                    onChange={(val: string) => setFormData({...formData, category: val})}
                     labelClassName={labelClasses}
-                    inputClassName="rounded-xl border-slate-100"
+                    selectClassName="rounded-xl border-slate-100"
                   />
                 </div>
+                <Input
+                  label="Năm học"
+                  placeholder="2024-2025"
+                  value={formData.academicYear}
+                  onChange={(e) => setFormData({...formData, academicYear: e.target.value})}
+                  labelClassName={labelClasses}
+                  inputClassName="rounded-xl border-slate-100"
+                />
 
               </div>
 

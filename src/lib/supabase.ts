@@ -45,6 +45,7 @@ export async function getApprovedDocuments(majorCode?: string): Promise<Document
       .from('documents')
       .select('*, majors(*)')
       .eq('status', 'APPROVED')
+      .neq('document_type', 'OUTLINE')
       .order('created_at', { ascending: false });
 
     if (majorCode) {
@@ -88,6 +89,7 @@ export async function getApprovedDocumentsPaginated(
       .from('documents')
       .select('*, majors(*)', { count: 'exact' })
       .eq('status', 'APPROVED')
+      .neq('document_type', 'OUTLINE')
       .order('created_at', { ascending: false })
       .range(start, end);
 
@@ -255,6 +257,7 @@ export async function getOtherDocumentsPaginated(
       .from('documents')
       .select('*, majors(*)', { count: 'exact' })
       .eq('status', 'APPROVED')
+      .neq('document_type', 'OUTLINE')
       .is('major_id', null)
       .order('created_at', { ascending: false })
       .range(start, end);

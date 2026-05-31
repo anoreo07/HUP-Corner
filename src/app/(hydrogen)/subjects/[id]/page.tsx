@@ -15,6 +15,8 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { DocumentCard } from '@/app/shared/document-card';
 
+import { SubjectDocumentsTabs } from './subject-documents-tabs';
+
 export async function generateMetadata({ params }: { params: { id: string } }) {
   const subject = await getSubjectById(params.id);
   if (!subject) return metaObject('Không tìm thấy môn học');
@@ -85,24 +87,23 @@ export default async function SubjectDetailPage({ params }: { params: { id: stri
           <div className="flex items-center justify-between mb-8 px-2">
             <div>
               <h2 className="text-2xl font-black text-on-surface tracking-tight font-plus-jakarta">Tài liệu học tập</h2>
-              <p className="text-on-surface-variant text-sm mt-1 font-medium">Tìm thấy {documents.length} tài liệu cho môn học này.</p>
+              {(() => {
+                const nonOutlineDocs = documents.filter(doc => doc.document_type !== 'OUTLINE');
+                return (
+                  <>
+                    <p className="text-on-surface-variant text-sm mt-1 font-medium">
+                      Tìm thấy {nonOutlineDocs.length} tài liệu cho môn học này.
+                    </p>
+                    <div className="mt-6">
+                      <SubjectDocumentsTabs documents={nonOutlineDocs} />
+                    </div>
+                  </>
+                );
+              })()}
             </div>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {documents.map((doc) => (
-              <DocumentCard key={doc.id} doc={doc} />
-            ))}
-
-            {documents.length === 0 && (
-              <div className="col-span-full py-24 text-center bg-surface-container-low rounded-[3rem] border border-dashed border-slate-200">
-                <FileText size={48} className="mx-auto text-slate-300 mb-4" />
-                <h3 className="text-xl font-bold text-slate-500">Chưa có tài liệu</h3>
-                <p className="text-sm text-slate-400 mt-1 max-w-xs mx-auto">Môn học này hiện chưa có tài liệu nào được đăng tải và kiểm duyệt.</p>
-              </div>
-            )}
-          </div>
         </section>
+
       </div>
     </div>
   );

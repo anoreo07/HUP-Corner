@@ -36,6 +36,7 @@ const documentTypeLabels: Record<DocumentType, string> = {
   EXAM: 'Đề thi',
   SLIDE: 'Slide bài giảng',
   TEXTBOOK: 'Giáo trình',
+  OUTLINE: 'Đề cương',
   OTHER: 'Khác',
 };
 
@@ -295,7 +296,8 @@ export default function AdminDashboardPage() {
           doc.file_name || doc.title,
           (progress, message) => {
             if (message) toast.loading(message, { id: toastId });
-          }
+          },
+          doc.telegram_bot_index || 1
         );
         toast.success('Tải về thành công!', { id: toastId });
       } catch (err) {
@@ -310,7 +312,8 @@ export default function AdminDashboardPage() {
   const handlePreview = async (doc: DocumentWithMajor) => {
     let previewUrl = '';
     if (doc.storage_provider === 'telegram') {
-      previewUrl = `/api/telegram/download?fileId=${encodeURIComponent(doc.file_path)}&fileName=${encodeURIComponent(doc.file_name || doc.title)}`;
+      const botQuery = doc.telegram_bot_index ? `&botIndex=${doc.telegram_bot_index}` : '';
+      previewUrl = `/api/telegram/download?fileId=${encodeURIComponent(doc.file_path)}&fileName=${encodeURIComponent(doc.file_name || doc.title)}${botQuery}`;
     } else {
       const { data } = supabase.storage.from('documents').getPublicUrl(doc.file_path);
       previewUrl = data.publicUrl;

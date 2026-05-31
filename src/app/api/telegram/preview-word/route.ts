@@ -14,6 +14,7 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const fileId = searchParams.get('fileId');
+    const botIndex = searchParams.get('botIndex') ? parseInt(searchParams.get('botIndex')!, 10) : 1;
 
     if (!fileId) {
       return NextResponse.json(
@@ -22,7 +23,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const { buffer } = await downloadFileAuto(fileId);
+    const { buffer } = await downloadFileAuto(fileId, botIndex);
 
     // Convert docx to HTML using mammoth
     const result = await mammoth.convertToHtml(

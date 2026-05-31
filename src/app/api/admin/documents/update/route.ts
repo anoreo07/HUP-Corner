@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { documentId, title, subject_name, academic_year } = await request.json();
+    const { documentId, title, subject_name, academic_year, category } = await request.json();
 
     if (!documentId || !title) {
       return NextResponse.json(
@@ -26,8 +26,9 @@ export async function POST(request: NextRequest) {
       .from('documents')
       .update({
         title,
-        subject_name: subject_name.toUpperCase(),
-        academic_year,
+        subject_name: subject_name?.toUpperCase() ?? null,
+        academic_year: academic_year ?? null,
+        category: category ?? null,
         updated_at: new Date().toISOString(),
       })
       .eq('id', documentId);
