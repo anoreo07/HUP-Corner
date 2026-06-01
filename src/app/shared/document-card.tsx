@@ -17,6 +17,7 @@ export const documentTypeLabels: Record<DocumentType, string> = {
   EXAM: 'Đề thi',
   SLIDE: 'Slide bài giảng',
   TEXTBOOK: 'Giáo trình',
+  OUTLINE: 'Đề cương',
   OTHER: 'Khác',
 };
 
@@ -25,6 +26,7 @@ export const getDocumentTypeStyles = (type: DocumentType) => {
     case 'EXAM': return 'bg-error-container text-on-error-container border-error/10';
     case 'SLIDE': return 'bg-secondary-container text-on-secondary-container border-secondary/10';
     case 'TEXTBOOK': return 'bg-tertiary-container text-on-tertiary-container border-tertiary/10';
+    case 'OUTLINE': return 'bg-primary-container text-on-primary-container border-primary/10';
     default: return 'bg-surface-container-high text-on-surface-variant border-outline/10';
   }
 };

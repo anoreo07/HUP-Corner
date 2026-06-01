@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getClientIp, checkRateLimit, RATE_LIMITS } from '@/utils/rate-limiter';
-
-const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+import { getTelegramBotToken } from '@/lib/telegram';
 
 /**
  * Endpoint to download and merge chunked files from Telegram
- * GET /api/telegram/merge-chunks?chunks=file_id1,file_id2,file_id3&fileName=original.pdf
- * 
+ * GET /api/telegram/merge-chunks?chunks=file_id1,file_id2,file_id3&fileName=original.pdf&botIndex=1
+ *
  * This downloads all chunks sequentially and returns merged file
  */
 export async function GET(request: NextRequest) {
@@ -14,6 +13,8 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const chunksParam = searchParams.get('chunks');
     const fileName = searchParams.get('fileName') || 'file';
+    const botIndex = searchParams.get('botIndex') ? parseInt(searchParams.get('botIndex')!, 10) : 1;
+    const TELEGRAM_BOT_TOKEN = getTelegramBotToken(botIndex);
 
     if (!chunksParam) {
       return NextResponse.json({ error: 'No chunks provided' }, { status: 400 });

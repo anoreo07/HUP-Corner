@@ -15,6 +15,7 @@ export interface FileUploadResult {
   file_name: string;
   file_size: number;
   message_id: number;
+  telegram_bot_index?: number;
 }
 
 export interface FileUploadState {
@@ -106,8 +107,11 @@ export function useFileUploader(options: UseFileUploaderOptions = {}) {
       }
 
       // Ensure chatId is provided
-      const channelId = chatId || (typeof window !== 'undefined' ? process.env.NEXT_PUBLIC_TELEGRAM_CHANNEL_ID : '');
+      const channelId = chatId || 
+                        (typeof window !== 'undefined' ? process.env.NEXT_PUBLIC_TELEGRAM_CHANNEL_ID : '') || 
+                        '-1003810443754';
       if (!channelId || channelId.trim() === '') {
+
         const errorMessage = 'Telegram Channel ID is not configured. Please check your environment variables.';
         const uploadState: FileUploadState = {
           fileName: file.name,
@@ -136,6 +140,20 @@ export function useFileUploader(options: UseFileUploaderOptions = {}) {
       ]);
 
       try {
+        // Fetch active bot index from upload-proxy prior to uploading
+        let botIndex = 1;
+        try {
+          const res = await fetch('/api/telegram/upload-proxy');
+          if (res.ok) {
+            const data = await res.json();
+            if (data.bot_index) {
+              botIndex = data.bot_index;
+            }
+          }
+        } catch (e) {
+          console.error('Failed to pre-fetch bot index, defaulting to 1', e);
+        }
+
         // Upload with automatic chunking
         const fileIds = await uploadFileWithChunking(file, channelId, (progress, message) => {
           setUploads((prev) => {
@@ -147,7 +165,7 @@ export function useFileUploader(options: UseFileUploaderOptions = {}) {
             };
             return updated;
           });
-        });
+        }, botIndex);
 
         if (!fileIds || fileIds.length === 0) {
           throw new Error('Upload thất bại - không nhận được file_id từ Telegram');
@@ -161,6 +179,7 @@ export function useFileUploader(options: UseFileUploaderOptions = {}) {
           file_name: file.name,
           file_size: file.size,
           message_id: 0,
+          telegram_bot_index: botIndex,
         };
 
         // If file was chunked, create chunk:fileId1|msgId1,fileId2|msgId2,... format

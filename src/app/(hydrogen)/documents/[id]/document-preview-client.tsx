@@ -81,7 +81,8 @@ export default function DocumentPreviewClient({ document, relatedDocuments }: Do
     const targetMime = isPdf ? 'application/pdf' : (isImage ? (document.mime_type || 'image/jpeg') : 'application/octet-stream');
 
     if (document.storage_provider === 'telegram') {
-      rawUrl = `/api/telegram/download?fileId=${encodeURIComponent(document.file_path)}&fileName=${encodeURIComponent(document.file_name || document.title)}&preview=true&mimeType=${encodeURIComponent(targetMime)}`;
+      const botQuery = document.telegram_bot_index ? `&botIndex=${document.telegram_bot_index}` : '';
+      rawUrl = `/api/telegram/download?fileId=${encodeURIComponent(document.file_path)}&fileName=${encodeURIComponent(document.file_name || document.title)}&preview=true&mimeType=${encodeURIComponent(targetMime)}${botQuery}`;
     } else {
       const { data } = supabase.storage.from('documents').getPublicUrl(document.file_path);
       rawUrl = data.publicUrl;
@@ -113,7 +114,8 @@ export default function DocumentPreviewClient({ document, relatedDocuments }: Do
           document.file_name || document.title,
           (progress, message) => {
             if (message) toast.loading(message, { id: toastId });
-          }
+          },
+          document.telegram_bot_index || 1
         );
       } else {
         const { data } = supabase.storage.from('documents').getPublicUrl(document.file_path);

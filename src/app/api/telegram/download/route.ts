@@ -12,6 +12,7 @@ export async function GET(request: NextRequest) {
     const fileName = searchParams.get('fileName') || 'download';
     const preview = searchParams.get('preview') === 'true';
     const mimeType = searchParams.get('mimeType') || 'application/octet-stream';
+    const botIndex = searchParams.get('botIndex') ? parseInt(searchParams.get('botIndex')!, 10) : 1;
 
     if (!fileId) {
       return NextResponse.json(
@@ -21,7 +22,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Download file — auto-reassembles chunks if needed
-    const { buffer } = await downloadFileAuto(fileId);
+    const { buffer } = await downloadFileAuto(fileId, botIndex);
 
     // Return file as download or inline preview
     const headers = new Headers();

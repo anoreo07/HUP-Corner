@@ -20,6 +20,7 @@ const documentTypeLabels: Record<DocumentType, string> = {
   EXAM: 'Đề thi',
   SLIDE: 'Slide bài giảng',
   TEXTBOOK: 'Giáo trình',
+  OUTLINE: 'Đề cương',
   OTHER: 'Khác',
 };
 
@@ -45,6 +46,8 @@ const getDocumentTypeBadgeColor = (type: DocumentType) => {
       return 'warning';
     case 'TEXTBOOK':
       return 'success';
+    case 'OUTLINE':
+      return 'secondary';
     default:
       return 'primary';
   }

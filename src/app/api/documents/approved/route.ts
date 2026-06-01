@@ -19,6 +19,7 @@ export async function GET(req: Request) {
         .from('documents')
         .select('*, majors(*)')
         .eq('status', 'APPROVED')
+        .neq('document_type', 'OUTLINE')
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -36,6 +37,7 @@ export async function GET(req: Request) {
       .from('documents')
       .select('*, majors(*)', { count: 'exact' })
       .eq('status', 'APPROVED')
+      .neq('document_type', 'OUTLINE')
       .order('created_at', { ascending: false })
       .range(start, end);
 

@@ -10,7 +10,7 @@ const navItems = [
   { name: 'Trang chủ', href: '/home', icon: 'home' },
   { name: 'Tài liệu', href: '/all-majors', icon: 'description' },
   { name: 'Môn học', href: '/subjects', icon: 'auto_stories' },
-  { name: 'Ôn thi', href: '#', icon: 'quiz', badge: 'Beta' },
+  { name: 'Ôn thi', href: '/exam-prep', icon: 'quiz', badge: 'Beta' },
 
   { name: 'Góp ý', href: '/feedback', icon: 'rate_review' },
 ];

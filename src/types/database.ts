@@ -1,6 +1,6 @@
 // Database types matching Supabase schema
 
-export type DocumentType = 'EXAM' | 'SLIDE' | 'TEXTBOOK' | 'OTHER';
+export type DocumentType = 'EXAM' | 'SLIDE' | 'TEXTBOOK' | 'OTHER' | 'OUTLINE';
 export type StorageProvider = 'supabase' | 'r2' | 'cloudinary' | 'local' | 'telegram';
 export type DocumentStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
 
@@ -29,6 +29,8 @@ export interface Document {
   id: string;
   title: string;
   document_type: DocumentType;
+  category: 'THEORY' | 'PRACTICAL' | null;
+  telegram_bot_index: number | null;
   major_id: string | null;
   subject_name: string | null;
   academic_year: string | null;
@@ -60,6 +62,8 @@ export interface DocumentWithMajor extends Document {
 export interface DocumentInsert {
   title: string;
   document_type: DocumentType;
+  category?: 'THEORY' | 'PRACTICAL' | null;
+  telegram_bot_index?: number | null;
   major_id?: string | null;
   subject_name?: string | null;
   academic_year?: string | null;

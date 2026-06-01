@@ -84,7 +84,8 @@ export async function uploadChunkToTelegram(
   chunk: FileChunk,
   chatId: string,
   onProgress?: (progress: number) => void,
-  retryCount = 0
+  retryCount = 0,
+  botIndex?: number
 ): Promise<{ file_id: string; message_id: number; file_name: string; file_size: number; chunk_info: string }> {
   const MAX_RETRIES = 3;
 
@@ -134,7 +135,7 @@ export async function uploadChunkToTelegram(
 
         setTimeout(async () => {
           try {
-            const result = await uploadChunkToTelegram(chunk, chatId, onProgress, retryCount + 1);
+            const result = await uploadChunkToTelegram(chunk, chatId, onProgress, retryCount + 1, botIndex);
             resolve(result);
           } catch (err) {
             reject(err);
@@ -176,6 +177,10 @@ export async function uploadChunkToTelegram(
     formData.append('total_chunks', String(chunk.totalChunks));
     formData.append('original_file_size', String(chunk.blob.size));
 
+    if (botIndex !== undefined) {
+      formData.append('bot_index', String(botIndex));
+    }
+
     // Send to proxy endpoint
     xhr.open('POST', '/api/telegram/upload-proxy');
     xhr.send(formData);
@@ -189,7 +194,8 @@ export async function uploadChunkToTelegram(
 export async function uploadFileWithChunking(
   file: File,
   chatId?: string,
-  onProgress?: (progress: number, message?: string) => void
+  onProgress?: (progress: number, message?: string) => void,
+  botIndex?: number
 ): Promise<string[]> {
   const chunks = splitFileIntoChunks(file);
   const results: { file_id: string; message_id: number | null; index: number }[] = [];
@@ -206,10 +212,16 @@ export async function uploadFileWithChunking(
   // Helper function to upload with a pool
   const uploadChunk = async (chunk: FileChunk) => {
     try {
-      const result = await uploadChunkToTelegram(chunk, chatId || '', (percent) => {
-        // Individual chunk progress is handled within uploadChunkToTelegram
-        // We can update global progress here if needed
-      });
+      const result = await uploadChunkToTelegram(
+        chunk,
+        chatId || '',
+        (percent) => {
+          // Individual chunk progress is handled within uploadChunkToTelegram
+          // We can update global progress here if needed
+        },
+        0,
+        botIndex
+      );
 
       results.push({
         file_id: result.file_id,
@@ -293,7 +305,8 @@ export function parseChunkedPath(filePath: string) {
 export async function downloadFileParallel(
   filePath: string,
   fileName: string,
-  onProgress?: (progress: number, message?: string) => void
+  onProgress?: (progress: number, message?: string) => void,
+  botIndex?: number
 ) {
   const chunks = parseChunkedPath(filePath);
   const totalChunks = chunks.length;
@@ -305,7 +318,8 @@ export async function downloadFileParallel(
   try {
     // Download all chunks in parallel
     const downloadPromises = chunks.map(async (chunk, index) => {
-      const response = await fetch(`/api/telegram/download-chunk?fileId=${chunk.fileId}`);
+      const botQuery = botIndex ? `&botIndex=${botIndex}` : '';
+      const response = await fetch(`/api/telegram/download-chunk?fileId=${chunk.fileId}${botQuery}`);
       if (!response.ok) throw new Error(`Failed to download chunk ${index + 1}`);
 
       // We can't easily track progress of individual fetches with fetch API 
