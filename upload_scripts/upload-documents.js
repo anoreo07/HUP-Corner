@@ -2,18 +2,23 @@
 
 /*
   Auto upload documents to Telegram storage and Supabase.
-  - Uses Gemini to generate an uppercase Vietnamese title (fallback to filename).
+  - Uses Ollama (optional) to generate an uppercase Vietnamese title (fallback to filename).
   - Renames the local file to the AI title before upload.
+  - Extracts category from LT (Theory) or TT (Practical) folder structure.
   - Inserts directly as APPROVED (admin flow bypass).
 
   Usage:
     node upload_scripts/upload-documents.js [--root upload_scripts/files] [--document-type OTHER]
-      [--academic-year "2023-2024"] [--dry-run] [--no-gemini] [--gemini-max-bytes 8000000]
+      [--academic-year "2023-2024"] [--dry-run] [--use-ollama] [--ollama-max-bytes 8000000]
+
+  Note: Ollama integration is disabled by default. Use --use-ollama to enable it.
 */
 
 const fs = require('fs');
 const path = require('path');
 const { createClient } = require('@supabase/supabase-js');
+const mammoth = require('mammoth');
+const pdf = require('pdf-parse');
 
 const DEFAULT_ROOT = path.join(__dirname, 'files');
 const TELEGRAM_CHUNK_SIZE = 19 * 1024 * 1024; // 19MB
@@ -87,6 +92,10 @@ function getMimeType(filePath) {
       return 'video/mp4';
     case '.mp3':
       return 'audio/mpeg';
+    case '.txt':
+      return 'text/plain';
+    case '.md':
+      return 'text/markdown';
     default:
       return 'application/octet-stream';
   }
@@ -127,95 +136,135 @@ function normalizeDocumentType(value, fallback) {
   return fallback;
 }
 
-async function callGeminiTitle({ apiKey, buffer, mimeType, fallbackTitle }) {
-  if (!apiKey) return fallbackTitle;
-
-  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${apiKey}`;
-
-  const base64 = buffer.toString('base64');
-  const body = {
-    contents: [
-      {
-        role: 'user',
-        parts: [
-          {
-            text: 'Read the attached document and return a concise Vietnamese title in ALL CAPS. Respond with a single line and no extra punctuation.'
-          },
-          {
-            inlineData: {
-              mimeType,
-              data: base64,
-            },
-          },
-        ],
-      },
-    ],
-    generationConfig: {
-      temperature: 0.2,
-      maxOutputTokens: 64,
-    },
-  };
-
-  const res = await fetch(endpoint, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  });
-
-  if (!res.ok) {
-    const errText = await res.text();
-    throw new Error(`Gemini error: ${res.status} ${errText}`);
+async function extractTextFromPdf(buffer) {
+  try {
+    const data = await pdf(buffer);
+    return data.text || '';
+  } catch (err) {
+    console.warn(`[Text Extraction] Failed to extract text from PDF: ${err.message}`);
+    return '';
   }
-
-  const data = await res.json();
-  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
-  const cleaned = String(text).trim().replace(/^"|"$/g, '');
-  if (!cleaned) return fallbackTitle;
-  return cleaned;
 }
 
-async function callGeminiDocumentType({ apiKey, buffer, mimeType, fallbackType }) {
-  if (!apiKey) return fallbackType;
+async function extractTextFromDocx(buffer) {
+  try {
+    const result = await mammoth.extractRawText({ buffer });
+    return result.value || '';
+  } catch (err) {
+    console.warn(`[Text Extraction] Failed to extract text from DOCX: ${err.message}`);
+    return '';
+  }
+}
 
-  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${apiKey}`;
-  const base64 = buffer.toString('base64');
-  const body = {
-    contents: [
-      {
-        role: 'user',
-        parts: [
-          {
-            text: 'Analyze the attached document and return only one label: EXAM, SLIDE, TEXTBOOK, or OTHER. Respond with a single word.'
-          },
-          {
-            inlineData: {
-              mimeType,
-              data: base64,
-            },
-          },
-        ],
-      },
-    ],
-    generationConfig: {
-      temperature: 0.2,
-      maxOutputTokens: 16,
-    },
-  };
-
-  const res = await fetch(endpoint, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  });
-
-  if (!res.ok) {
-    const errText = await res.text();
-    throw new Error(`Gemini error: ${res.status} ${errText}`);
+async function callOllamaMetadata({ url, model, buffer, mimeType, fileName, fallbackTitle, fallbackType }) {
+  if (!url) {
+    return {
+      title: fallbackTitle,
+      document_type: fallbackType,
+      academic_year: null,
+      lecturer_name: null,
+      faculty: null,
+      description: null
+    };
   }
 
-  const data = await res.json();
-  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
-  return normalizeDocumentType(text, fallbackType);
+  let extractedText = '';
+  try {
+    const ext = path.extname(fileName).toLowerCase();
+    if (mimeType === 'application/pdf' || ext === '.pdf') {
+      extractedText = await extractTextFromPdf(buffer);
+    } else if (mimeType.includes('word') || mimeType.includes('officedocument.wordprocessingml') || ext === '.docx' || ext === '.doc') {
+      extractedText = await extractTextFromDocx(buffer);
+    } else if (mimeType.startsWith('text/') || mimeType === 'application/json' || ext === '.txt' || ext === '.md' || ext === '.json') {
+      extractedText = buffer.toString('utf8');
+    }
+  } catch (err) {
+    console.warn(`[Ollama] Failed to extract text: ${err.message}`);
+    extractedText = '';
+  }
+
+  // Prepare simplified prompt for better JSON response
+  const documentInfo = extractedText.slice(0, 2000) || `File name: ${fileName}`;
+  
+  const prompt = `Analyze this document and return ONLY a valid JSON object with these fields:
+{
+  "title": "Concise Vietnamese title in ALL CAPS (or null)",
+  "document_type": "One of: EXAM, SLIDE, TEXTBOOK, OTHER (or OTHER if unknown)",
+  "academic_year": "2023-2024 format if mentioned (or null)",
+  "lecturer_name": "Full name if mentioned (or null)",
+  "faculty": "Faculty/Department name (or null)",
+  "description": "1-2 sentence description (or null)"
+}
+
+Document info:
+${documentInfo}`;
+
+  try {
+    const res = await fetch(`${url}/api/chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model,
+        messages: [
+          {
+            role: 'user',
+            content: prompt
+          }
+        ],
+        stream: false,
+      }),
+    });
+
+    if (!res.ok) {
+      const errorText = await res.text();
+      throw new Error(`Ollama HTTP ${res.status}: ${errorText}`);
+    }
+
+    const data = await res.json();
+    const responseText = data?.message?.content || '';
+    
+    if (!responseText) {
+      console.warn(`[Ollama] Empty response from Ollama`);
+      throw new Error('Empty response');
+    }
+
+    // Extract JSON from response (might have extra text)
+    const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      console.warn(`[Ollama] No JSON found in response: ${responseText.slice(0, 100)}`);
+      throw new Error('No JSON in response');
+    }
+
+    const metadata = JSON.parse(jsonMatch[0]);
+    return {
+      title: metadata.title ? String(metadata.title).trim() : fallbackTitle,
+      document_type: normalizeDocumentType(metadata.document_type, fallbackType),
+      academic_year: metadata.academic_year || null,
+      lecturer_name: metadata.lecturer_name || null,
+      faculty: metadata.faculty || null,
+      description: metadata.description || null
+    };
+  } catch (err) {
+    console.warn(`[Ollama] Failed to get metadata: ${err.message}`);
+    return {
+      title: fallbackTitle,
+      document_type: fallbackType,
+      academic_year: null,
+      lecturer_name: null,
+      faculty: null,
+      description: null
+    };
+  }
+}
+
+async function callOllamaTitle({ url, model, buffer, mimeType, fileName, fallbackTitle }) {
+  const metadata = await callOllamaMetadata({ url, model, buffer, mimeType, fileName, fallbackTitle, fallbackType: 'OTHER' });
+  return metadata.title;
+}
+
+async function callOllamaDocumentType({ url, model, buffer, mimeType, fileName, fallbackType }) {
+  const metadata = await callOllamaMetadata({ url, model, buffer, mimeType, fileName, fallbackTitle: 'Unknown', fallbackType });
+  return metadata.document_type;
 }
 
 async function uploadFileToTelegram({ token, chatId, buffer, fileName, mimeType, caption }) {
@@ -306,17 +355,66 @@ function walkFiles(root) {
   return results;
 }
 
-function inferSubjectFromPath(filePath) {
+function inferSubjectFromPath(filePath, rootPath) {
   const parts = filePath.split(path.sep);
   const idx = parts.lastIndexOf('subject');
   if (idx >= 0 && parts[idx + 1]) {
     return parts[idx + 1];
   }
+  if (rootPath) {
+    const relative = path.relative(rootPath, filePath);
+    const relativeParts = relative.split(path.sep);
+    if (relativeParts.length > 1) {
+      return relativeParts[0];
+    }
+  }
+  return null;
+}
+
+function inferCategoryFromPath(filePath, rootPath) {
+  const parts = filePath.split(path.sep);
+  
+  // Look for LT or TT folder anywhere in the path
+  for (const part of parts) {
+    if (part === 'LT' || part.toUpperCase() === 'LT') {
+      return 'THEORY';
+    }
+    if (part === 'TT' || part.toUpperCase() === 'TT') {
+      return 'PRACTICAL';
+    }
+  }
+  
+  // Fallback: try to find category based on relative path from root
+  if (rootPath) {
+    const relative = path.relative(rootPath, filePath);
+    const relativeParts = relative.split(path.sep);
+    // Check second level (after subject folder)
+    if (relativeParts.length > 1) {
+      const categoryPart = relativeParts[1];
+      if (categoryPart === 'LT' || categoryPart.toUpperCase() === 'LT') {
+        return 'THEORY';
+      }
+      if (categoryPart === 'TT' || categoryPart.toUpperCase() === 'TT') {
+        return 'PRACTICAL';
+      }
+    }
+  }
+  
   return null;
 }
 
 async function resolveSubjectInfo(supabase, subjectName) {
   if (!subjectName) return { subject: null, majorId: null };
+
+  const { data: codeMatch, error: codeError } = await supabase
+    .from('subjects')
+    .select('*')
+    .ilike('code', subjectName)
+    .limit(1);
+
+  if (!codeError && codeMatch && codeMatch.length > 0) {
+    return { subject: codeMatch[0], majorId: codeMatch[0].major_id || null };
+  }
 
   const { data: exact, error: exactError } = await supabase
     .from('subjects')
@@ -349,14 +447,15 @@ async function main() {
   const documentType = args.get('--document-type') || DEFAULT_DOCUMENT_TYPE;
   const academicYear = args.get('--academic-year') || null;
   const dryRun = Boolean(args.get('--dry-run'));
-  const useGemini = !args.get('--no-gemini');
-  const geminiMaxBytes = Number(args.get('--gemini-max-bytes') || DEFAULT_GEMINI_MAX_BYTES);
+  const useOllama = Boolean(args.get('--use-ollama'));
+  const ollamaMaxBytes = Number(args.get('--ollama-max-bytes') || args.get('--gemini-max-bytes') || DEFAULT_GEMINI_MAX_BYTES);
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   const telegramToken = process.env.TELEGRAM_BOT_TOKEN;
   const telegramChatId = process.env.TELEGRAM_CHANNEL_ID;
-  const geminiKey = process.env.GEMINI_API_KEY || '';
+  const ollamaApiUrl = process.env.OLLAMA_API_URL || 'http://192.168.1.231:11434';
+  const ollamaModel = process.env.OLLAMA_MODEL || 'gemma3:4b';
 
   if (!supabaseUrl || !supabaseServiceKey) {
     throw new Error('Missing Supabase env: NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY');
@@ -374,6 +473,9 @@ async function main() {
   }
 
   console.log(`Found ${files.length} file(s) under ${root}`);
+  if (useOllama) {
+    console.log(`Using Ollama API URL: ${ollamaApiUrl} with model: ${ollamaModel}`);
+  }
 
   for (const filePath of files) {
     const stat = fs.statSync(filePath);
@@ -381,26 +483,29 @@ async function main() {
 
     const mimeType = getMimeType(filePath);
     const originalFileName = path.basename(filePath);
-    const subjectFromPath = inferSubjectFromPath(filePath);
+    const subjectFromPath = inferSubjectFromPath(filePath, root);
+    const categoryFromPath = inferCategoryFromPath(filePath, root);
 
     const buffer = fs.readFileSync(filePath);
     const fallbackTitle = toUpperVi(titleFromFileName(originalFileName));
 
     let aiTitle = fallbackTitle;
-    if (useGemini && geminiKey && buffer.length <= geminiMaxBytes) {
+    if (useOllama && ollamaApiUrl && buffer.length <= ollamaMaxBytes) {
       try {
-        const raw = await callGeminiTitle({
-          apiKey: geminiKey,
+        const raw = await callOllamaTitle({
+          url: ollamaApiUrl,
+          model: ollamaModel,
           buffer,
           mimeType,
+          fileName: originalFileName,
           fallbackTitle,
         });
         aiTitle = toUpperVi(raw);
       } catch (err) {
-        console.warn(`[Gemini] Fallback to filename for ${originalFileName}: ${err.message}`);
+        console.warn(`[Ollama] Fallback to filename for ${originalFileName}: ${err.message}`);
       }
-    } else if (useGemini && geminiKey && buffer.length > geminiMaxBytes) {
-      console.warn(`[Gemini] Skip large file (${buffer.length} bytes): ${originalFileName}`);
+    } else if (useOllama && ollamaApiUrl && buffer.length > ollamaMaxBytes) {
+      console.warn(`[Ollama] Skip large file (${buffer.length} bytes): ${originalFileName}`);
     }
 
     const safeTitle = slugifyFileName(aiTitle || fallbackTitle);
@@ -420,21 +525,24 @@ async function main() {
     const fallbackDocType = normalizeDocumentType(documentType, DEFAULT_DOCUMENT_TYPE);
 
     let aiDocType = fallbackDocType;
-    if (useGemini && geminiKey && buffer.length <= geminiMaxBytes) {
+    if (useOllama && ollamaApiUrl && buffer.length <= ollamaMaxBytes) {
       try {
-        aiDocType = await callGeminiDocumentType({
-          apiKey: geminiKey,
+        aiDocType = await callOllamaDocumentType({
+          url: ollamaApiUrl,
+          model: ollamaModel,
           buffer,
           mimeType,
+          fileName: originalFileName,
           fallbackType: fallbackDocType,
         });
       } catch (err) {
-        console.warn(`[Gemini] Fallback document_type for ${originalFileName}: ${err.message}`);
+        console.warn(`[Ollama] Fallback document_type for ${originalFileName}: ${err.message}`);
       }
     }
 
     console.log(`\nProcessing: ${finalName}`);
     console.log(`  Subject: ${subject?.name || subjectFromPath || 'N/A'}`);
+    console.log(`  Category: ${categoryFromPath || 'N/A'}`);
     console.log(`  Title: ${aiTitle}`);
     console.log(`  Document type: ${aiDocType}`);
 
@@ -455,6 +563,7 @@ async function main() {
     const insertPayload = {
       title: aiTitle,
       document_type: aiDocType,
+      category: categoryFromPath,
       major_id: majorId,
       subject_id: subject?.id || null,
       subject_name: subject?.name || (subjectFromPath ? toUpperVi(subjectFromPath) : null),
